@@ -5,18 +5,20 @@
   
 
   
-  <title>通过kube-apiserver访问kube-dashboard | periky&#39;s blog</title>
+  <title>k8s service底层之iptables与ipvs | periky&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="制作证书">
+  <meta name="description" content="K8s Service底层之Iptables与Ipvsservice底层实现主要有两个网络模式: iptables和ipvs. 他们都是由kube-proxy维护 IptablesIpvs">
 <meta property="og:type" content="article">
-<meta property="og:title" content="通过kube-apiserver访问kube-dashboard">
-<meta property="og:url" content="https://periky.github.io/2020/05/16/%E9%80%9A%E8%BF%87apiserver%E8%AE%BF%E9%97%AEdashboard/index.html">
+<meta property="og:title" content="k8s service底层之iptables与ipvs">
+<meta property="og:url" content="https://periky.github.io/2023/05/08/k8s/service%E5%BA%95%E5%B1%82%E4%B9%8Biptables%E4%B8%8Eipvs/index.html">
 <meta property="og:site_name" content="periky&#39;s blog">
-<meta property="og:description" content="制作证书">
+<meta property="og:description" content="K8s Service底层之Iptables与Ipvsservice底层实现主要有两个网络模式: iptables和ipvs. 他们都是由kube-proxy维护 IptablesIpvs">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2020-05-16T05:08:40.000Z">
-<meta property="article:modified_time" content="2023-05-07T15:01:28.763Z">
+<meta property="article:published_time" content="2023-05-08T07:28:22.042Z">
+<meta property="article:modified_time" content="2023-05-08T07:33:37.291Z">
 <meta property="article:author" content="periky">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="iptables">
 <meta property="article:tag" content="kubernetes">
 <meta name="twitter:card" content="summary">
   
@@ -67,10 +69,10 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-通过apiserver访问dashboard" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-k8s/service底层之iptables与ipvs" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2020/05/16/%E9%80%9A%E8%BF%87apiserver%E8%AE%BF%E9%97%AEdashboard/" class="article-date">
-  <time datetime="2020-05-16T05:08:40.000Z" itemprop="datePublished">2020-05-16</time>
+    <a href="/2023/05/08/k8s/service%E5%BA%95%E5%B1%82%E4%B9%8Biptables%E4%B8%8Eipvs/" class="article-date">
+  <time datetime="2023-05-08T07:28:22.042Z" itemprop="datePublished">2023-05-08</time>
 </a>
     
   </div>
@@ -81,7 +83,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      通过kube-apiserver访问kube-dashboard
+      k8s service底层之iptables与ipvs
     </h1>
   
 
@@ -89,32 +91,15 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="制作证书"><a href="#制作证书" class="headerlink" title="制作证书"></a>制作证书</h1><span id="more"></span>
-
-
-<p><strong>client-certificate-data</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep &#x27;client-certificate-data&#x27; ~/.kube/config | head -n 1 | awk &#x27;&#123;print $2&#125;&#x27; | base64 -d &gt;&gt; kubecfg.crt</span><br></pre></td></tr></table></figure>
-
-
-<p><strong>client-key-data</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep &#x27;client-key-data&#x27; ~/.kube/config | head -n 1 | awk &#x27;&#123;print $2&#125;&#x27; | base64 -d &gt;&gt; kubecfg.key</span><br></pre></td></tr></table></figure>
-
-
-<p><strong>生成ps12文件</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl pkcs12 -export -clcerts -inkey kubecfg.key -in kubecfg.crt -out kubecfg.p12 -name &quot;kubernetes-client&quot;</span><br></pre></td></tr></table></figure>
-
-
-<blockquote>
-<p>tips: 浏览器导入证书之后需要重启</p>
-</blockquote>
-
+        <h1 id="K8s-Service底层之Iptables与Ipvs"><a href="#K8s-Service底层之Iptables与Ipvs" class="headerlink" title="K8s Service底层之Iptables与Ipvs"></a>K8s Service底层之Iptables与Ipvs</h1><p><em><strong>service底层实现主要有两个网络模式: iptables和ipvs. 他们都是由kube-proxy维护</strong></em></p>
+<h2 id="Iptables"><a href="#Iptables" class="headerlink" title="Iptables"></a>Iptables</h2><h2 id="Ipvs"><a href="#Ipvs" class="headerlink" title="Ipvs"></a>Ipvs</h2>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://periky.github.io/2020/05/16/%E9%80%9A%E8%BF%87apiserver%E8%AE%BF%E9%97%AEdashboard/" data-id="clhehu5ys0008b0ut6v8u4ctd" class="article-share-link">Share</a>
+      <a data-url="https://periky.github.io/2023/05/08/k8s/service%E5%BA%95%E5%B1%82%E4%B9%8Biptables%E4%B8%8Eipvs/" data-id="clhexbhfe000ft7ut22sdaiey" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li></ul>
 
     </footer>
   </div>
@@ -122,19 +107,10 @@
     
 <nav id="article-nav">
   
-    <a href="/2023/05/08/iptables/%E8%A7%84%E5%88%99%E7%AE%A1%E7%90%86/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          Iptable规则管理
-        
-      </div>
-    </a>
   
-  
-    <a href="/2020/02/11/%E5%9F%BA%E4%BA%8Eopenssl%E7%9A%84kubernetes%E8%AF%81%E4%B9%A6/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2023/05/08/iptables/nat/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">基于openssl的kubernetes证书</div>
+      <div class="article-nav-title">iptable的地址转换</div>
     </a>
   
 </nav>
@@ -185,6 +161,10 @@
       <ul>
         
           <li>
+            <a href="/2023/05/08/k8s/service%E5%BA%95%E5%B1%82%E4%B9%8Biptables%E4%B8%8Eipvs/">k8s service底层之iptables与ipvs</a>
+          </li>
+        
+          <li>
             <a href="/2023/05/08/iptables/nat/">iptable的地址转换</a>
           </li>
         
@@ -198,10 +178,6 @@
         
           <li>
             <a href="/2023/05/08/iptables/%E5%9F%BA%E7%A1%80/">Iptable基础知识</a>
-          </li>
-        
-          <li>
-            <a href="/2023/05/08/iptables/%E8%A7%84%E5%88%99%E7%AE%A1%E7%90%86/">Iptable规则管理</a>
           </li>
         
       </ul>
