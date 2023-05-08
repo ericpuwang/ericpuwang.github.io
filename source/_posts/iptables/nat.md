@@ -8,6 +8,8 @@ tags: [linux, iptables]
 
 **<font color='red'>如果想要NAT功能能够正常使用，需要开启Linux主机的核心转发功能。</font>**
 
+<!--more-->
+
 ## SNAT
 
 ***配置SNAT，可以隐藏网内主机的IP地址，也可以共享公网IP，访问互联网，如果只是共享IP的话，只配置如下SNAT规则即可***
