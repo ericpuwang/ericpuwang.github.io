@@ -89,23 +89,15 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h1 id="NAT"><a href="#NAT" class="headerlink" title="NAT"></a>NAT</h1><p><strong><font color='red'>如果想要NAT功能能够正常使用，需要开启Linux主机的核心转发功能。</font></strong></p>
-<h2 id="SNAT"><a href="#SNAT" class="headerlink" title="SNAT"></a>SNAT</h2><p><em><strong>配置SNAT，可以隐藏网内主机的IP地址，也可以共享公网IP，访问互联网，如果只是共享IP的话，只配置如下SNAT规则即可</strong></em></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -j SNAT --to-source 公网IP</span><br></pre></td></tr></table></figure>
-
-<p><strong>如果公网IP是动态获取的，不是固定的，则可以使用MASQUERADE进行动态的SNAT操作。</strong></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">将10.1网段的报文的源IP修改为eth0网卡中可用的地址。</span></span><br><span class="line">iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -o eth0 -j MASQUERADE</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="DNAT"><a href="#DNAT" class="headerlink" title="DNAT"></a>DNAT</h2><p><em><strong>配置DNAT，可以通过公网IP访问局域网内的服务。</strong></em></p>
-<p><strong><font color='red'>Tips:</font></strong> 理论上来说，只要配置DNAT规则，不需要对应的SNAT规则即可达到DNAT效果。但是测试过程中，对应SNAT规则也需要配置，才能正常DNAT，可以先尝试只配置DNAT规则，如果无法正常DNAT，再尝试添加对应的SNAT规则，SNAT规则配置一条即可，DNAT规则需要根据实际情况配置不同的DNAT规则。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -I PREROUTING -d 公网IP -p tcp --dport 公网端口 -j DNAT --to-destination 私网IP:端口号</span><br><span class="line"></span><br><span class="line">iptables -t nat -I PREROUTING -d 公网IP -p tcp --dport 8080 -j DNAT --to-destination 10.1.0.1:80</span><br><span class="line"></span><br><span class="line">iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -j SNAT --to-source 公网IP</span><br></pre></td></tr></table></figure>
-
-<p><strong>在本机进行目标端口映射时可以使用REDIRECT动作</strong></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">本机80端口映射到8080</span></span><br><span class="line">iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 8080</span><br></pre></td></tr></table></figure>
+        
+          <p class="article-more-link">
+            <a href="/2023/05/08/iptables/nat/#more">Read More</a>
+          </p>
+        
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://periky.github.io/2023/05/08/iptables/nat/" data-id="clhehcqzg0000x7ut74qd4eg0" class="article-share-link">Share</a>
+      <a data-url="https://periky.github.io/2023/05/08/iptables/nat/" data-id="clhehu5yt000ab0utb42j7sh2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li></ul>
@@ -148,7 +140,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://periky.github.io/2023/05/08/iptables/%E8%87%AA%E5%AE%9A%E4%B9%89%E9%93%BE/" data-id="clhehcqzk0001x7ut2i553n80" class="article-share-link">Share</a>
+      <a data-url="https://periky.github.io/2023/05/08/iptables/%E8%87%AA%E5%AE%9A%E4%B9%89%E9%93%BE/" data-id="clhehu5yw000fb0utflvm1418" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li></ul>
@@ -191,7 +183,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://periky.github.io/2023/05/08/iptables/%E8%A7%84%E5%88%99%E5%8C%B9%E9%85%8D%E6%9D%A1%E4%BB%B6/" data-id="clhef14lp000318ut8j6cdiqk" class="article-share-link">Share</a>
+      <a data-url="https://periky.github.io/2023/05/08/iptables/%E8%A7%84%E5%88%99%E5%8C%B9%E9%85%8D%E6%9D%A1%E4%BB%B6/" data-id="clhehu5yz000ib0ut42k11b1w" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li></ul>
@@ -235,7 +227,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://periky.github.io/2023/05/08/iptables/%E5%9F%BA%E7%A1%80/" data-id="clhe90ezg000a82uthbacg6sh" class="article-share-link">Share</a>
+      <a data-url="https://periky.github.io/2023/05/08/iptables/%E5%9F%BA%E7%A1%80/" data-id="clhehu5yv000db0utbmm9fs2r" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li></ul>
@@ -278,7 +270,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://periky.github.io/2023/05/08/iptables/%E8%A7%84%E5%88%99%E7%AE%A1%E7%90%86/" data-id="clheevrhn000018ut4g2r8v0m" class="article-share-link">Share</a>
+      <a data-url="https://periky.github.io/2023/05/08/iptables/%E8%A7%84%E5%88%99%E7%AE%A1%E7%90%86/" data-id="clhehu5z0000jb0ut834d1bys" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li></ul>
@@ -321,7 +313,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://periky.github.io/2020/05/16/%E9%80%9A%E8%BF%87apiserver%E8%AE%BF%E9%97%AEdashboard/" data-id="clhe90eze000882ut4r246sid" class="article-share-link">Share</a>
+      <a data-url="https://periky.github.io/2020/05/16/%E9%80%9A%E8%BF%87apiserver%E8%AE%BF%E9%97%AEdashboard/" data-id="clhehu5ys0008b0ut6v8u4ctd" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li></ul>
@@ -364,7 +356,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://periky.github.io/2020/02/11/%E5%9F%BA%E4%BA%8Eopenssl%E7%9A%84kubernetes%E8%AF%81%E4%B9%A6/" data-id="clhe90ezb000582utgww7h2cr" class="article-share-link">Share</a>
+      <a data-url="https://periky.github.io/2020/02/11/%E5%9F%BA%E4%BA%8Eopenssl%E7%9A%84kubernetes%E8%AF%81%E4%B9%A6/" data-id="clhehu5yq0005b0ut1rb4d8vm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/" rel="tag">openssl</a></li></ul>
@@ -409,7 +401,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://periky.github.io/2020/02/09/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E5%9B%9B)_k8s%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/" data-id="clhe90eza000482ut3pni2a8d" class="article-share-link">Share</a>
+      <a data-url="https://periky.github.io/2020/02/09/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E5%9B%9B)_k8s%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/" data-id="clhehu5yp0004b0ut41wv12fk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li></ul>
@@ -453,7 +445,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://periky.github.io/2020/02/09/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%B8%89)_flannel/" data-id="clhe90eyz000082utc8fsct2v" class="article-share-link">Share</a>
+      <a data-url="https://periky.github.io/2020/02/09/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%B8%89)_flannel/" data-id="clhehu5yk0001b0utcdwl12a9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li></ul>
@@ -496,7 +488,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://periky.github.io/2020/02/08/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%BA%8C)_etcd%E9%9B%86%E7%BE%A4/" data-id="clhe90ez8000382utft07hy0t" class="article-share-link">Share</a>
+      <a data-url="https://periky.github.io/2020/02/08/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%BA%8C)_etcd%E9%9B%86%E7%BE%A4/" data-id="clhehu5yn0003b0ut59845w3p" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li></ul>

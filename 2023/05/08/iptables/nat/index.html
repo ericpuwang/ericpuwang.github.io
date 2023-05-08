@@ -7,15 +7,15 @@
   
   <title>iptable的地址转换 | periky&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="NAT如果想要NAT功能能够正常使用，需要开启Linux主机的核心转发功能。 SNAT配置SNAT，可以隐藏网内主机的IP地址，也可以共享公网IP，访问互联网，如果只是共享IP的话，只配置如下SNAT规则即可 1iptables -t nat -A POSTROUTING -s 10.1.0.0&#x2F;16 -j SNAT --to-source 公网IP  如果公网IP是动态获取的，不是固定的，则可以">
+  <meta name="description" content="NAT如果想要NAT功能能够正常使用，需要开启Linux主机的核心转发功能。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="iptable的地址转换">
 <meta property="og:url" content="https://periky.github.io/2023/05/08/iptables/nat/index.html">
 <meta property="og:site_name" content="periky&#39;s blog">
-<meta property="og:description" content="NAT如果想要NAT功能能够正常使用，需要开启Linux主机的核心转发功能。 SNAT配置SNAT，可以隐藏网内主机的IP地址，也可以共享公网IP，访问互联网，如果只是共享IP的话，只配置如下SNAT规则即可 1iptables -t nat -A POSTROUTING -s 10.1.0.0&#x2F;16 -j SNAT --to-source 公网IP  如果公网IP是动态获取的，不是固定的，则可以">
+<meta property="og:description" content="NAT如果想要NAT功能能够正常使用，需要开启Linux主机的核心转发功能。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-05-08T06:44:23.000Z">
-<meta property="article:modified_time" content="2023-05-08T06:46:50.172Z">
+<meta property="article:modified_time" content="2023-05-08T06:59:27.971Z">
 <meta property="article:author" content="periky">
 <meta property="article:tag" content="linux">
 <meta property="article:tag" content="iptables">
@@ -91,6 +91,8 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h1 id="NAT"><a href="#NAT" class="headerlink" title="NAT"></a>NAT</h1><p><strong><font color='red'>如果想要NAT功能能够正常使用，需要开启Linux主机的核心转发功能。</font></strong></p>
+<span id="more"></span>
+
 <h2 id="SNAT"><a href="#SNAT" class="headerlink" title="SNAT"></a>SNAT</h2><p><em><strong>配置SNAT，可以隐藏网内主机的IP地址，也可以共享公网IP，访问互联网，如果只是共享IP的话，只配置如下SNAT规则即可</strong></em></p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -j SNAT --to-source 公网IP</span><br></pre></td></tr></table></figure>
 
@@ -107,7 +109,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://periky.github.io/2023/05/08/iptables/nat/" data-id="clhehcqzg0000x7ut74qd4eg0" class="article-share-link">Share</a>
+      <a data-url="https://periky.github.io/2023/05/08/iptables/nat/" data-id="clhehu5yt000ab0utb42j7sh2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li></ul>
