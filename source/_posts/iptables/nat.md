@@ -4,8 +4,6 @@ date: 2023-05-08 14:44:23
 tags: [linux, iptables]
 ---
 
-# NAT
-
 **<font color='red'>如果想要NAT功能能够正常使用，需要开启Linux主机的核心转发功能。</font>**
 
 <!--more-->
