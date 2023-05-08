@@ -7,16 +7,16 @@
   
   <title>Iptable基础知识 | periky&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="概念iptables可以检测、修改、转发、重定向和丢弃IPv4数据包 过滤ipv4数据包的代码内置于linux内核中, 按照不同目的被组织成不同表的集合。表由一系列预先定义的链组成，链 包含规则。每一条规则谓词的潜在匹配和一个动作(目标), 如果该谓词为真则执行该动作。">
+  <meta name="description" content="iptables可以检测、修改、转发、重定向和丢弃IPv4数据包 过滤ipv4数据包的代码内置于linux内核中, 按照不同目的被组织成不同表的集合。表由一系列预先定义的链组成，链 包含规则。每一条规则谓词的潜在匹配和一个动作(目标), 如果该谓词为真则执行该动作。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Iptable基础知识">
 <meta property="og:url" content="https://periky.github.io/2023/05/08/iptables/%E5%9F%BA%E7%A1%80/index.html">
 <meta property="og:site_name" content="periky&#39;s blog">
-<meta property="og:description" content="概念iptables可以检测、修改、转发、重定向和丢弃IPv4数据包 过滤ipv4数据包的代码内置于linux内核中, 按照不同目的被组织成不同表的集合。表由一系列预先定义的链组成，链 包含规则。每一条规则谓词的潜在匹配和一个动作(目标), 如果该谓词为真则执行该动作。">
+<meta property="og:description" content="iptables可以检测、修改、转发、重定向和丢弃IPv4数据包 过滤ipv4数据包的代码内置于linux内核中, 按照不同目的被组织成不同表的集合。表由一系列预先定义的链组成，链 包含规则。每一条规则谓词的潜在匹配和一个动作(目标), 如果该谓词为真则执行该动作。">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://periky.github.io/images/tables_traverse.png">
 <meta property="article:published_time" content="2023-05-08T04:49:10.000Z">
-<meta property="article:modified_time" content="2023-05-08T05:47:49.751Z">
+<meta property="article:modified_time" content="2023-05-08T15:02:30.946Z">
 <meta property="article:author" content="periky">
 <meta property="article:tag" content="linux">
 <meta property="article:tag" content="iptables">
@@ -92,7 +92,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h1><p><em><strong>iptables可以检测、修改、转发、重定向和丢弃IPv4数据包</strong></em></p>
+        <p><em><strong>iptables可以检测、修改、转发、重定向和丢弃IPv4数据包</strong></em></p>
 <p>过滤ipv4数据包的代码内置于linux内核中, 按照不同目的被组织成不同<strong>表</strong>的集合。<strong>表</strong>由一系列预先定义的<strong>链</strong>组成，<strong>链</strong> 包含规则。每一条规则谓词的潜在匹配和一个动作(<strong>目标</strong>), 如果该谓词为真则执行该动作。</p>
 <span id="more"></span>
 
