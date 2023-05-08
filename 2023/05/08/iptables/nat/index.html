@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>iptable的地址转换 | periky&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="NAT如果想要NAT功能能够正常使用，需要开启Linux主机的核心转发功能。 SNAT配置SNAT，可以隐藏网内主机的IP地址，也可以共享公网IP，访问互联网，如果只是共享IP的话，只配置如下SNAT规则即可 1iptables -t nat -A POSTROUTING -s 10.1.0.0&#x2F;16 -j SNAT --to-source 公网IP  如果公网IP是动态获取的，不是固定的，则可以">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iptable的地址转换">
+<meta property="og:url" content="https://periky.github.io/2023/05/08/iptables/nat/index.html">
+<meta property="og:site_name" content="periky&#39;s blog">
+<meta property="og:description" content="NAT如果想要NAT功能能够正常使用，需要开启Linux主机的核心转发功能。 SNAT配置SNAT，可以隐藏网内主机的IP地址，也可以共享公网IP，访问互联网，如果只是共享IP的话，只配置如下SNAT规则即可 1iptables -t nat -A POSTROUTING -s 10.1.0.0&#x2F;16 -j SNAT --to-source 公网IP  如果公网IP是动态获取的，不是固定的，则可以">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-05-08T06:44:23.000Z">
+<meta property="article:modified_time" content="2023-05-08T06:46:50.172Z">
+<meta property="article:author" content="periky">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="iptables">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="periky&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">periky&#39;s blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://periky.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-iptables/nat" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2023/05/08/iptables/nat/" class="article-date">
+  <time datetime="2023-05-08T06:44:23.000Z" itemprop="datePublished">2023-05-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      iptable的地址转换
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="NAT"><a href="#NAT" class="headerlink" title="NAT"></a>NAT</h1><p><strong><font color='red'>如果想要NAT功能能够正常使用，需要开启Linux主机的核心转发功能。</font></strong></p>
+<h2 id="SNAT"><a href="#SNAT" class="headerlink" title="SNAT"></a>SNAT</h2><p><em><strong>配置SNAT，可以隐藏网内主机的IP地址，也可以共享公网IP，访问互联网，如果只是共享IP的话，只配置如下SNAT规则即可</strong></em></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -j SNAT --to-source 公网IP</span><br></pre></td></tr></table></figure>
+
+<p><strong>如果公网IP是动态获取的，不是固定的，则可以使用MASQUERADE进行动态的SNAT操作。</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">将10.1网段的报文的源IP修改为eth0网卡中可用的地址。</span></span><br><span class="line">iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -o eth0 -j MASQUERADE</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="DNAT"><a href="#DNAT" class="headerlink" title="DNAT"></a>DNAT</h2><p><em><strong>配置DNAT，可以通过公网IP访问局域网内的服务。</strong></em></p>
+<p><strong><font color='red'>Tips:</font></strong> 理论上来说，只要配置DNAT规则，不需要对应的SNAT规则即可达到DNAT效果。但是测试过程中，对应SNAT规则也需要配置，才能正常DNAT，可以先尝试只配置DNAT规则，如果无法正常DNAT，再尝试添加对应的SNAT规则，SNAT规则配置一条即可，DNAT规则需要根据实际情况配置不同的DNAT规则。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -I PREROUTING -d 公网IP -p tcp --dport 公网端口 -j DNAT --to-destination 私网IP:端口号</span><br><span class="line"></span><br><span class="line">iptables -t nat -I PREROUTING -d 公网IP -p tcp --dport 8080 -j DNAT --to-destination 10.1.0.1:80</span><br><span class="line"></span><br><span class="line">iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -j SNAT --to-source 公网IP</span><br></pre></td></tr></table></figure>
+
+<p><strong>在本机进行目标端口映射时可以使用REDIRECT动作</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">本机80端口映射到8080</span></span><br><span class="line">iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 8080</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://periky.github.io/2023/05/08/iptables/nat/" data-id="clhehcqzg0000x7ut74qd4eg0" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2023/05/08/iptables/%E8%87%AA%E5%AE%9A%E4%B9%89%E9%93%BE/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Iptables自定义链</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/" rel="tag">linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/openssl/" rel="tag">openssl</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/iptables/" style="font-size: 15px;">iptables</a> <a href="/tags/kubernetes/" style="font-size: 20px;">kubernetes</a> <a href="/tags/linux/" style="font-size: 15px;">linux</a> <a href="/tags/openssl/" style="font-size: 10px;">openssl</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">May 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/05/08/iptables/nat/">iptable的地址转换</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/08/iptables/%E8%87%AA%E5%AE%9A%E4%B9%89%E9%93%BE/">Iptables自定义链</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/08/iptables/%E8%A7%84%E5%88%99%E5%8C%B9%E9%85%8D%E6%9D%A1%E4%BB%B6/">Iptable规则匹配条件</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/08/iptables/%E5%9F%BA%E7%A1%80/">Iptable基础知识</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/08/iptables/%E8%A7%84%E5%88%99%E7%AE%A1%E7%90%86/">Iptable规则管理</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2023 periky<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

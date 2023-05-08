@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>periky&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="学无止境">
+<meta property="og:type" content="website">
+<meta property="og:title" content="periky&#39;s blog">
+<meta property="og:url" content="https://periky.github.io/index.html">
+<meta property="og:site_name" content="periky&#39;s blog">
+<meta property="og:description" content="学无止境">
+<meta property="og:locale" content="en_US">
+<meta property="article:author" content="periky">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="periky&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">periky&#39;s blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://periky.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-iptables/nat" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2023/05/08/iptables/nat/" class="article-date">
+  <time datetime="2023-05-08T06:44:23.000Z" itemprop="datePublished">2023-05-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2023/05/08/iptables/nat/">iptable的地址转换</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="NAT"><a href="#NAT" class="headerlink" title="NAT"></a>NAT</h1><p><strong><font color='red'>如果想要NAT功能能够正常使用，需要开启Linux主机的核心转发功能。</font></strong></p>
+<h2 id="SNAT"><a href="#SNAT" class="headerlink" title="SNAT"></a>SNAT</h2><p><em><strong>配置SNAT，可以隐藏网内主机的IP地址，也可以共享公网IP，访问互联网，如果只是共享IP的话，只配置如下SNAT规则即可</strong></em></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -j SNAT --to-source 公网IP</span><br></pre></td></tr></table></figure>
+
+<p><strong>如果公网IP是动态获取的，不是固定的，则可以使用MASQUERADE进行动态的SNAT操作。</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">将10.1网段的报文的源IP修改为eth0网卡中可用的地址。</span></span><br><span class="line">iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -o eth0 -j MASQUERADE</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="DNAT"><a href="#DNAT" class="headerlink" title="DNAT"></a>DNAT</h2><p><em><strong>配置DNAT，可以通过公网IP访问局域网内的服务。</strong></em></p>
+<p><strong><font color='red'>Tips:</font></strong> 理论上来说，只要配置DNAT规则，不需要对应的SNAT规则即可达到DNAT效果。但是测试过程中，对应SNAT规则也需要配置，才能正常DNAT，可以先尝试只配置DNAT规则，如果无法正常DNAT，再尝试添加对应的SNAT规则，SNAT规则配置一条即可，DNAT规则需要根据实际情况配置不同的DNAT规则。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -I PREROUTING -d 公网IP -p tcp --dport 公网端口 -j DNAT --to-destination 私网IP:端口号</span><br><span class="line"></span><br><span class="line">iptables -t nat -I PREROUTING -d 公网IP -p tcp --dport 8080 -j DNAT --to-destination 10.1.0.1:80</span><br><span class="line"></span><br><span class="line">iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -j SNAT --to-source 公网IP</span><br></pre></td></tr></table></figure>
+
+<p><strong>在本机进行目标端口映射时可以使用REDIRECT动作</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">本机80端口映射到8080</span></span><br><span class="line">iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 8080</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://periky.github.io/2023/05/08/iptables/nat/" data-id="clhehcqzg0000x7ut74qd4eg0" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-iptables/自定义链" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2023/05/08/iptables/%E8%87%AA%E5%AE%9A%E4%B9%89%E9%93%BE/" class="article-date">
+  <time datetime="2023-05-08T06:41:12.000Z" itemprop="datePublished">2023-05-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2023/05/08/iptables/%E8%87%AA%E5%AE%9A%E4%B9%89%E9%93%BE/">Iptables自定义链</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="自定义链-Chain"><a href="#自定义链-Chain" class="headerlink" title="自定义链(Chain)"></a>自定义链(Chain)</h1><h2 id="创建自定义链"><a href="#创建自定义链" class="headerlink" title="创建自定义链"></a>创建自定义链</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">在filter表中创建IN_WEB自定义链</span></span><br><span class="line">iptables -t filter -N IN_WEB</span><br></pre></td></tr></table></figure>
+        
+          <p class="article-more-link">
+            <a href="/2023/05/08/iptables/%E8%87%AA%E5%AE%9A%E4%B9%89%E9%93%BE/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://periky.github.io/2023/05/08/iptables/%E8%87%AA%E5%AE%9A%E4%B9%89%E9%93%BE/" data-id="clhehcqzk0001x7ut2i553n80" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-iptables/规则匹配条件" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2023/05/08/iptables/%E8%A7%84%E5%88%99%E5%8C%B9%E9%85%8D%E6%9D%A1%E4%BB%B6/" class="article-date">
+  <time datetime="2023-05-08T05:42:00.000Z" itemprop="datePublished">2023-05-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2023/05/08/iptables/%E8%A7%84%E5%88%99%E5%8C%B9%E9%85%8D%E6%9D%A1%E4%BB%B6/">Iptable规则匹配条件</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="基本规则匹配条件"><a href="#基本规则匹配条件" class="headerlink" title="基本规则匹配条件"></a>基本规则匹配条件</h1><h2 id="源地址匹配"><a href="#源地址匹配" class="headerlink" title="源地址匹配"></a>源地址匹配</h2><p><em><strong><code>-s</code> 用于匹配报文的源地址,可以同时指定多个源地址，每个IP之间用逗号隔开，也可以指定为一个网段</strong></em></p>
+        
+          <p class="article-more-link">
+            <a href="/2023/05/08/iptables/%E8%A7%84%E5%88%99%E5%8C%B9%E9%85%8D%E6%9D%A1%E4%BB%B6/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://periky.github.io/2023/05/08/iptables/%E8%A7%84%E5%88%99%E5%8C%B9%E9%85%8D%E6%9D%A1%E4%BB%B6/" data-id="clhef14lp000318ut8j6cdiqk" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-iptables/基础" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2023/05/08/iptables/%E5%9F%BA%E7%A1%80/" class="article-date">
+  <time datetime="2023-05-08T04:49:10.000Z" itemprop="datePublished">2023-05-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2023/05/08/iptables/%E5%9F%BA%E7%A1%80/">Iptable基础知识</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h1><p><em><strong>iptables可以检测、修改、转发、重定向和丢弃IPv4数据包</strong></em></p>
+<p>过滤ipv4数据包的代码内置于linux内核中, 按照不同目的被组织成不同<strong>表</strong>的集合。<strong>表</strong>由一系列预先定义的<strong>链</strong>组成，<strong>链</strong> 包含规则。每一条规则谓词的潜在匹配和一个动作(<strong>目标</strong>), 如果该谓词为真则执行该动作。</p>
+        
+          <p class="article-more-link">
+            <a href="/2023/05/08/iptables/%E5%9F%BA%E7%A1%80/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://periky.github.io/2023/05/08/iptables/%E5%9F%BA%E7%A1%80/" data-id="clhe90ezg000a82uthbacg6sh" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-iptables/规则管理" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2023/05/08/iptables/%E8%A7%84%E5%88%99%E7%AE%A1%E7%90%86/" class="article-date">
+  <time datetime="2023-05-08T04:49:10.000Z" itemprop="datePublished">2023-05-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2023/05/08/iptables/%E8%A7%84%E5%88%99%E7%AE%A1%E7%90%86/">Iptable规则管理</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="规则"><a href="#规则" class="headerlink" title="规则"></a>规则</h1><p>规则（rules）其实就是网络管理员预定义的条件，规则一般的定义为“如果数据包头符合这样的条件，就这样处理这个数据包”。规则存储在内核空间的信息 包过滤表中，这些规则分别指定了源地址、目的地址、传输协议（如TCP、UDP、ICMP）和服务类型（如HTTP、FTP和SMTP）等。当数据包与规 则匹配时，iptables就根据规则所定义的方法来处理这些数据包，如放行（accept）、拒绝（reject）和丢弃（drop）等。配置防火墙的 主要工作就是添加、修改和删除这些规则。</p>
+        
+          <p class="article-more-link">
+            <a href="/2023/05/08/iptables/%E8%A7%84%E5%88%99%E7%AE%A1%E7%90%86/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://periky.github.io/2023/05/08/iptables/%E8%A7%84%E5%88%99%E7%AE%A1%E7%90%86/" data-id="clheevrhn000018ut4g2r8v0m" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-通过apiserver访问dashboard" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/05/16/%E9%80%9A%E8%BF%87apiserver%E8%AE%BF%E9%97%AEdashboard/" class="article-date">
+  <time datetime="2020-05-16T05:08:40.000Z" itemprop="datePublished">2020-05-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/05/16/%E9%80%9A%E8%BF%87apiserver%E8%AE%BF%E9%97%AEdashboard/">通过kube-apiserver访问kube-dashboard</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="制作证书"><a href="#制作证书" class="headerlink" title="制作证书"></a>制作证书</h1>
+        
+          <p class="article-more-link">
+            <a href="/2020/05/16/%E9%80%9A%E8%BF%87apiserver%E8%AE%BF%E9%97%AEdashboard/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://periky.github.io/2020/05/16/%E9%80%9A%E8%BF%87apiserver%E8%AE%BF%E9%97%AEdashboard/" data-id="clhe90eze000882ut4r246sid" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-基于openssl的kubernetes证书" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/11/%E5%9F%BA%E4%BA%8Eopenssl%E7%9A%84kubernetes%E8%AF%81%E4%B9%A6/" class="article-date">
+  <time datetime="2020-02-11T04:49:10.000Z" itemprop="datePublished">2020-02-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/11/%E5%9F%BA%E4%BA%8Eopenssl%E7%9A%84kubernetes%E8%AF%81%E4%B9%A6/">基于openssl的kubernetes证书</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="kube-apiserver的CA证书"><a href="#kube-apiserver的CA证书" class="headerlink" title="kube-apiserver的CA证书"></a>kube-apiserver的CA证书</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">openssl genrsa -out ca.key 2048</span><br><span class="line">openssl req -x509 -new -nodes -key ca.key -subj &quot;/CN=&lt;master_hostname&gt;&quot; \</span><br><span class="line">    -days 5000 -out ca.crt</span><br><span class="line">openssl genrsa -out server.key 2048</span><br></pre></td></tr></table></figure>
+        
+          <p class="article-more-link">
+            <a href="/2020/02/11/%E5%9F%BA%E4%BA%8Eopenssl%E7%9A%84kubernetes%E8%AF%81%E4%B9%A6/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://periky.github.io/2020/02/11/%E5%9F%BA%E4%BA%8Eopenssl%E7%9A%84kubernetes%E8%AF%81%E4%B9%A6/" data-id="clhe90ezb000582utgww7h2cr" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openssl/" rel="tag">openssl</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-kubernetes集群部署(四)_k8s集群部署" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/09/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E5%9B%9B)_k8s%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/" class="article-date">
+  <time datetime="2020-02-09T07:08:40.000Z" itemprop="datePublished">2020-02-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/09/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E5%9B%9B)_k8s%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/">kubernetes机器部署(四):k8s集群部署</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="获取二进制文件"><a href="#获取二进制文件" class="headerlink" title="获取二进制文件"></a>获取二进制文件</h2><p><em>所有操作都在master结点上执行</em></p>
+<p><strong>获取安装文件</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget https://dl.k8s.io/v1.15.5/kubernetes-server-linux-amd64.tar.gz</span><br><span class="line">tar xf kubernetes-server-linux-amd64.tar.gz</span><br><span class="line">cd kubernetes/server/bin</span><br><span class="line">cp kube-apiserver kube-controller-manager kubectl /usr/bin</span><br><span class="line">cp kube-scheduler kubelet kube-proxy  /usr/bin</span><br></pre></td></tr></table></figure>
+        
+          <p class="article-more-link">
+            <a href="/2020/02/09/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E5%9B%9B)_k8s%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://periky.github.io/2020/02/09/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E5%9B%9B)_k8s%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/" data-id="clhe90eza000482ut3pni2a8d" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-kubernetes集群部署(三)_flannel" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/09/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%B8%89)_flannel/" class="article-date">
+  <time datetime="2020-02-09T05:08:40.000Z" itemprop="datePublished">2020-02-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/09/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%B8%89)_flannel/">kubernetes集群部署(三):flannel集群</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>安装flannel服务</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/coreos/flannel/releases/download/v0.11.0/ \ </span><br><span class="line">    flannel-v0.11.0-linux-amd64.tar.gz</span><br><span class="line">mv flanneld mk-docker-opts.sh /usr/bin/</span><br></pre></td></tr></table></figure>
+        
+          <p class="article-more-link">
+            <a href="/2020/02/09/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%B8%89)_flannel/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://periky.github.io/2020/02/09/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%B8%89)_flannel/" data-id="clhe90eyz000082utc8fsct2v" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-kubernetes集群部署(二)_etcd集群" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/08/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%BA%8C)_etcd%E9%9B%86%E7%BE%A4/" class="article-date">
+  <time datetime="2020-02-08T15:08:52.000Z" itemprop="datePublished">2020-02-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/08/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%BA%8C)_etcd%E9%9B%86%E7%BE%A4/">kubernetes集群部署(二):etcd集群</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="安装etcd服务"><a href="#安装etcd服务" class="headerlink" title="安装etcd服务"></a>安装etcd服务</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/etcd-io/etcd/releases/download/ \</span><br><span class="line">    v3.3.17/etcd-v3.3.18-linux-arm64.tar.gz</span><br><span class="line">tar xf etcd-v3.3.17-linux-amd64.tar.gz</span><br><span class="line">cd etcd-v3.3.17-linux-amd64</span><br><span class="line">mv etcd* /usr/bin/</span><br></pre></td></tr></table></figure>
+        
+          <p class="article-more-link">
+            <a href="/2020/02/08/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%BA%8C)_etcd%E9%9B%86%E7%BE%A4/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://periky.github.io/2020/02/08/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%BA%8C)_etcd%E9%9B%86%E7%BE%A4/" data-id="clhe90ez8000382utft07hy0t" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+
+
+  <nav id="page-nav">
+    
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
+  </nav>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/" rel="tag">linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/openssl/" rel="tag">openssl</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/iptables/" style="font-size: 15px;">iptables</a> <a href="/tags/kubernetes/" style="font-size: 20px;">kubernetes</a> <a href="/tags/linux/" style="font-size: 15px;">linux</a> <a href="/tags/openssl/" style="font-size: 10px;">openssl</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">May 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/05/08/iptables/nat/">iptable的地址转换</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/08/iptables/%E8%87%AA%E5%AE%9A%E4%B9%89%E9%93%BE/">Iptables自定义链</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/08/iptables/%E8%A7%84%E5%88%99%E5%8C%B9%E9%85%8D%E6%9D%A1%E4%BB%B6/">Iptable规则匹配条件</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/08/iptables/%E5%9F%BA%E7%A1%80/">Iptable基础知识</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/08/iptables/%E8%A7%84%E5%88%99%E7%AE%A1%E7%90%86/">Iptable规则管理</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2023 periky<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

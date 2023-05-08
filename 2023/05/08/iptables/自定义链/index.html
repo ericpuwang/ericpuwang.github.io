@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>Iptables自定义链 | periky&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="自定义链(Chain)创建自定义链12# 在filter表中创建IN_WEB自定义链iptables -t filter -N IN_WEB">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Iptables自定义链">
+<meta property="og:url" content="https://periky.github.io/2023/05/08/iptables/%E8%87%AA%E5%AE%9A%E4%B9%89%E9%93%BE/index.html">
+<meta property="og:site_name" content="periky&#39;s blog">
+<meta property="og:description" content="自定义链(Chain)创建自定义链12# 在filter表中创建IN_WEB自定义链iptables -t filter -N IN_WEB">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-05-08T06:41:12.000Z">
+<meta property="article:modified_time" content="2023-05-08T06:43:45.092Z">
+<meta property="article:author" content="periky">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="iptables">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="periky&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">periky&#39;s blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://periky.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-iptables/自定义链" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2023/05/08/iptables/%E8%87%AA%E5%AE%9A%E4%B9%89%E9%93%BE/" class="article-date">
+  <time datetime="2023-05-08T06:41:12.000Z" itemprop="datePublished">2023-05-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Iptables自定义链
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="自定义链-Chain"><a href="#自定义链-Chain" class="headerlink" title="自定义链(Chain)"></a>自定义链(Chain)</h1><h2 id="创建自定义链"><a href="#创建自定义链" class="headerlink" title="创建自定义链"></a>创建自定义链</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">在filter表中创建IN_WEB自定义链</span></span><br><span class="line">iptables -t filter -N IN_WEB</span><br></pre></td></tr></table></figure>
+
+<span id="more"></span>
+
+<h2 id="引用自定义链"><a href="#引用自定义链" class="headerlink" title="引用自定义链"></a>引用自定义链</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">在INPUT链中引用刚才创建的自定义链</span></span><br><span class="line">iptables -t filter -I INPUT -p tcp --dport 80 -j IN_WEB</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="重命名自定义链"><a href="#重命名自定义链" class="headerlink" title="重命名自定义链"></a>重命名自定义链</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">将IN_WEB自定义链重命名为WEB</span></span><br><span class="line">iptables -E IN_WEB WEB</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="删除自定义链"><a href="#删除自定义链" class="headerlink" title="删除自定义链"></a>删除自定义链</h2><p><strong>删除自定义链需要满足一下两个条件:</strong></p>
+<ul>
+<li>自定义链没有被引用</li>
+<li>自定义链中没有任何规则</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">删除引用计数为0并且不包含任何规则的WEB链</span></span><br><span class="line">iptables -X WEB</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://periky.github.io/2023/05/08/iptables/%E8%87%AA%E5%AE%9A%E4%B9%89%E9%93%BE/" data-id="clhehcqzk0001x7ut2i553n80" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/05/08/iptables/nat/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          iptable的地址转换
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/05/08/iptables/%E8%A7%84%E5%88%99%E5%8C%B9%E9%85%8D%E6%9D%A1%E4%BB%B6/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Iptable规则匹配条件</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/iptables/" rel="tag">iptables</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kubernetes/" rel="tag">kubernetes</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/" rel="tag">linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/openssl/" rel="tag">openssl</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/iptables/" style="font-size: 15px;">iptables</a> <a href="/tags/kubernetes/" style="font-size: 20px;">kubernetes</a> <a href="/tags/linux/" style="font-size: 15px;">linux</a> <a href="/tags/openssl/" style="font-size: 10px;">openssl</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">May 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/05/08/iptables/nat/">iptable的地址转换</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/08/iptables/%E8%87%AA%E5%AE%9A%E4%B9%89%E9%93%BE/">Iptables自定义链</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/08/iptables/%E8%A7%84%E5%88%99%E5%8C%B9%E9%85%8D%E6%9D%A1%E4%BB%B6/">Iptable规则匹配条件</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/08/iptables/%E5%9F%BA%E7%A1%80/">Iptable基础知识</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/08/iptables/%E8%A7%84%E5%88%99%E7%AE%A1%E7%90%86/">Iptable规则管理</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2023 periky<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>
