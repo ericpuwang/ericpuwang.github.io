@@ -23,7 +23,7 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="k8s service底层之iptables与ipvs">
 <meta property="og:url" content="https://periky.github.io/2023/05/08/k8s/service%E5%BA%95%E5%B1%82%E4%B9%8Biptables%E4%B8%8Eipvs/index.html">
-<meta property="og:site_name" content="periky&#39;s blog">
+<meta property="og:site_name" content="学海无涯">
 <meta property="og:description" content="service底层实现主要有两个网络模式: iptables和ipvs. 他们都是由kube-proxy维护 Iptableskube-proxy通过Service的Informer感知到ApiServer的Service和EndPoint的变化情况。作为该事件的响应，它会在宿主机上创建相应的iptables规则。这些规则会捕获到Service的ClusterIp和Port的流量，并将流量按照比例">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://periky.github.io/images/k8s_service_iptables.png">
@@ -45,7 +45,7 @@
 <script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://periky.github.io/2023/05/08/k8s/service%E5%BA%95%E5%B1%82%E4%B9%8Biptables%E4%B8%8Eipvs/","path":"/2023/05/08/k8s/service底层之iptables与ipvs/","title":"k8s service底层之iptables与ipvs"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>k8s service底层之iptables与ipvs | periky's blog</title>
+<title>k8s service底层之iptables与ipvs | 学海无涯</title>
   
 
 
@@ -75,10 +75,10 @@
 
     <a href="/" class="brand" rel="start">
       <i class="logo-line"></i>
-      <p class="site-title">periky's blog</p>
+      <p class="site-title">学海无涯</p>
       <i class="logo-line"></i>
     </a>
-      <p class="site-subtitle" itemprop="description">学无止境</p>
+      <p class="site-subtitle" itemprop="description">Stay hungry, Stay foolish</p>
   </div>
 
   <div class="site-nav-right">
@@ -124,12 +124,12 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-count">25</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
@@ -164,12 +164,12 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="periky's blog">
+      <meta itemprop="name" content="学海无涯">
       <meta itemprop="description" content="学无止境">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="k8s service底层之iptables与ipvs | periky's blog">
+      <meta itemprop="name" content="k8s service底层之iptables与ipvs | 学海无涯">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
