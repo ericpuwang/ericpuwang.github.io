@@ -19,15 +19,15 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"periky.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.16.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="描述 给定一个单链表的头结点**pHead**(该头节点是有值的，比如在下图，它的val是1)，长度为n，反转该链表后，返回新链表的表头。">
+    <meta name="description" content="描述 给定一个单链表的头结点 pHead (该头节点是有值的，比如在下图，它的val是1)，长度为n，反转该链表后，返回新链表的表头。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="反转链表">
 <meta property="og:url" content="https://periky.github.io/2023/05/13/%E7%AE%97%E6%B3%95/%E5%8F%8D%E8%BD%AC%E9%93%BE%E8%A1%A8/index.html">
 <meta property="og:site_name" content="学海无涯">
-<meta property="og:description" content="描述 给定一个单链表的头结点**pHead**(该头节点是有值的，比如在下图，它的val是1)，长度为n，反转该链表后，返回新链表的表头。">
+<meta property="og:description" content="描述 给定一个单链表的头结点 pHead (该头节点是有值的，比如在下图，它的val是1)，长度为n，反转该链表后，返回新链表的表头。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-05-13T06:23:00.000Z">
-<meta property="article:modified_time" content="2023-05-13T06:29:06.473Z">
+<meta property="article:modified_time" content="2023-05-14T05:07:04.137Z">
 <meta property="article:author" content="periky">
 <meta property="article:tag" content="算法">
 <meta property="article:tag" content="链表">
@@ -119,12 +119,12 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-count">40</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">8</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
@@ -179,9 +179,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2023-05-13 14:23:00 / Modified: 14:29:06" itemprop="dateCreated datePublished" datetime="2023-05-13T14:23:00+08:00">2023-05-13</time>
+      <time title="Created: 2023-05-13 14:23:00" itemprop="dateCreated datePublished" datetime="2023-05-13T14:23:00+08:00">2023-05-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-05-14 13:07:04" itemprop="dateModified" datetime="2023-05-14T13:07:04+08:00">2023-05-14</time>
     </span>
 
   
@@ -194,7 +200,7 @@
     
     
     <div class="post-body" itemprop="articleBody"><p><strong>描述</strong></p>
-<p>给定一个单链表的头结点**<code>pHead</code>**(该头节点是有值的，比如在下图，它的val是1)，长度为n，反转该链表后，返回新链表的表头。</p>
+<p>给定一个单链表的头结点 <strong><code>pHead</code></strong> (该头节点是有值的，比如在下图，它的val是1)，长度为n，反转该链表后，返回新链表的表头。</p>
 <span id="more"></span>
 
 <p><em>数据范围</em>: <strong><code>0≤n≤1000</code></strong></p>
@@ -212,10 +218,10 @@
 <p><strong><code>pHead</code></strong> 的下一个节点</p>
 <p>当链表反转时,需如下步骤:</p>
 <ol>
-<li>保存**<code>pHead</code>**的下一个节点. 防止后续链表丢失</li>
-<li>将**<code>pHead</code><strong>指向</strong><code>newHead</code>**,完成节点反转</li>
-<li>更新**<code>newHead</code><strong>为</strong><code>pHead</code>**,将完成的反转节点加入链表</li>
-<li>更新**<code>pHead</code>**,继续反转依旧未反转的链表</li>
+<li>保存 <strong><code>pHead</code></strong> 的下一个节点. 防止后续链表丢失</li>
+<li>将 <strong><code>pHead</code></strong> 指向 <strong><code>newHead</code></strong> ,完成节点反转</li>
+<li>更新 <strong><code>newHead</code></strong> 为 <strong><code>pHead</code></strong> ,将完成的反转节点加入链表</li>
+<li>更新 <strong><code>pHead</code></strong> ,继续反转依旧未反转的链表</li>
 </ol>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> ListNode <span class="keyword">struct</span>&#123;</span><br><span class="line">    Val <span class="type">int</span></span><br><span class="line">    Next *ListNode</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @param pHead ListNode类</span></span><br><span class="line"><span class="comment"> * @return ListNode类</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ReverseList</span><span class="params">(pHead *ListNode)</span></span> *ListNode &#123;</span><br><span class="line">	<span class="keyword">if</span> pHead == <span class="literal">nil</span> || pHead.Next == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> pHead</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> newHead *ListNode</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> pHead != <span class="literal">nil</span> &#123;</span><br><span class="line">        pHead, pHead.Next, newHead = pHead.Next, newHead, pHead</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> newHead</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
     </div>

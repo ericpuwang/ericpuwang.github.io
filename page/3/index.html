@@ -115,12 +115,12 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-count">40</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">8</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
@@ -146,7 +146,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://periky.github.io/2020/02/11/k8s/%E5%9F%BA%E4%BA%8Eopenssl%E7%9A%84kubernetes%E8%AF%81%E4%B9%A6/">
+    <link itemprop="mainEntityOfPage" href="https://periky.github.io/2023/05/13/%E7%AE%97%E6%B3%95/%E9%93%BE%E8%A1%A8%E4%B8%AD%E7%8E%AF%E7%9A%84%E5%85%A5%E5%8F%A3%E7%82%B9/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -164,7 +164,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/02/11/k8s/%E5%9F%BA%E4%BA%8Eopenssl%E7%9A%84kubernetes%E8%AF%81%E4%B9%A6/" class="post-title-link" itemprop="url">基于openssl的kubernetes证书</a>
+          <a href="/2023/05/13/%E7%AE%97%E6%B3%95/%E9%93%BE%E8%A1%A8%E4%B8%AD%E7%8E%AF%E7%9A%84%E5%85%A5%E5%8F%A3%E7%82%B9/" class="post-title-link" itemprop="url">链表中环的入口点</a>
         </h2>
 
         <div class="post-meta-container">
@@ -174,15 +174,9 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
+      
 
-      <time title="Created: 2020-02-11 12:49:10" itemprop="dateCreated datePublished" datetime="2020-02-11T12:49:10+08:00">2020-02-11</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2023-05-07 23:01:28" itemprop="dateModified" datetime="2023-05-07T23:01:28+08:00">2023-05-07</time>
+      <time title="Created: 2023-05-13 14:43:00 / Modified: 14:43:29" itemprop="dateCreated datePublished" datetime="2023-05-13T14:43:00+08:00">2023-05-13</time>
     </span>
 
   
@@ -195,10 +189,11 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="kube-apiserver的CA证书"><a href="#kube-apiserver的CA证书" class="headerlink" title="kube-apiserver的CA证书"></a>kube-apiserver的CA证书</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">openssl genrsa -out ca.key 2048</span><br><span class="line">openssl req -x509 -new -nodes -key ca.key -subj &quot;/CN=&lt;master_hostname&gt;&quot; \</span><br><span class="line">    -days 5000 -out ca.crt</span><br><span class="line">openssl genrsa -out server.key 2048</span><br></pre></td></tr></table></figure>
+          <p><strong>描述</strong></p>
+<p>给一个长度为n链表，若其中包含环，请找出该链表的环的入口结点，否则，返回null。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2020/02/11/k8s/%E5%9F%BA%E4%BA%8Eopenssl%E7%9A%84kubernetes%E8%AF%81%E4%B9%A6/#more" rel="contents">
+              <a class="btn" href="/2023/05/13/%E7%AE%97%E6%B3%95/%E9%93%BE%E8%A1%A8%E4%B8%AD%E7%8E%AF%E7%9A%84%E5%85%A5%E5%8F%A3%E7%82%B9/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -229,7 +224,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://periky.github.io/2020/02/09/k8s/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E5%9B%9B)_k8s%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/">
+    <link itemprop="mainEntityOfPage" href="https://periky.github.io/2023/05/13/%E7%AE%97%E6%B3%95/%E9%93%BE%E8%A1%A8%E4%B8%AD%E5%80%92%E6%95%B0%E6%9C%80%E5%90%8EK%E4%B8%AA%E8%8A%82%E7%82%B9/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -247,7 +242,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/02/09/k8s/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E5%9B%9B)_k8s%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">kubernetes机器部署(四):k8s集群部署</a>
+          <a href="/2023/05/13/%E7%AE%97%E6%B3%95/%E9%93%BE%E8%A1%A8%E4%B8%AD%E5%80%92%E6%95%B0%E6%9C%80%E5%90%8EK%E4%B8%AA%E8%8A%82%E7%82%B9/" class="post-title-link" itemprop="url">链表中倒数最后K个节点</a>
         </h2>
 
         <div class="post-meta-container">
@@ -257,15 +252,9 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
+      
 
-      <time title="Created: 2020-02-09 15:08:40" itemprop="dateCreated datePublished" datetime="2020-02-09T15:08:40+08:00">2020-02-09</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2023-05-07 23:01:28" itemprop="dateModified" datetime="2023-05-07T23:01:28+08:00">2023-05-07</time>
+      <time title="Created: 2023-05-13 14:40:00 / Modified: 14:41:16" itemprop="dateCreated datePublished" datetime="2023-05-13T14:40:00+08:00">2023-05-13</time>
     </span>
 
   
@@ -278,12 +267,11 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="获取二进制文件"><a href="#获取二进制文件" class="headerlink" title="获取二进制文件"></a>获取二进制文件</h2><p><em>所有操作都在master结点上执行</em></p>
-<p><strong>获取安装文件</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget https://dl.k8s.io/v1.15.5/kubernetes-server-linux-amd64.tar.gz</span><br><span class="line">tar xf kubernetes-server-linux-amd64.tar.gz</span><br><span class="line">cd kubernetes/server/bin</span><br><span class="line">cp kube-apiserver kube-controller-manager kubectl /usr/bin</span><br><span class="line">cp kube-scheduler kubelet kube-proxy  /usr/bin</span><br></pre></td></tr></table></figure>
+          <p><strong>描述</strong></p>
+<p>输入一个长度为 n 的链表，设链表中的元素的值为 a<sub>i</sub> ，返回该链表中倒数第k个节点。<br>如果该链表长度小于k，请返回一个长度为 0 的链表。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2020/02/09/k8s/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E5%9B%9B)_k8s%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/#more" rel="contents">
+              <a class="btn" href="/2023/05/13/%E7%AE%97%E6%B3%95/%E9%93%BE%E8%A1%A8%E4%B8%AD%E5%80%92%E6%95%B0%E6%9C%80%E5%90%8EK%E4%B8%AA%E8%8A%82%E7%82%B9/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -314,7 +302,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://periky.github.io/2020/02/09/k8s/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%B8%89)_flannel/">
+    <link itemprop="mainEntityOfPage" href="https://periky.github.io/2023/05/13/%E7%AE%97%E6%B3%95/%E9%93%BE%E8%A1%A8%E7%9B%B8%E5%8A%A0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -332,7 +320,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/02/09/k8s/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%B8%89)_flannel/" class="post-title-link" itemprop="url">kubernetes集群部署(三):flannel集群</a>
+          <a href="/2023/05/13/%E7%AE%97%E6%B3%95/%E9%93%BE%E8%A1%A8%E7%9B%B8%E5%8A%A0/" class="post-title-link" itemprop="url">链表相加</a>
         </h2>
 
         <div class="post-meta-container">
@@ -342,15 +330,9 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
+      
 
-      <time title="Created: 2020-02-09 13:08:40" itemprop="dateCreated datePublished" datetime="2020-02-09T13:08:40+08:00">2020-02-09</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2023-05-07 23:01:28" itemprop="dateModified" datetime="2023-05-07T23:01:28+08:00">2023-05-07</time>
+      <time title="Created: 2023-05-13 14:38:00 / Modified: 14:39:24" itemprop="dateCreated datePublished" datetime="2023-05-13T14:38:00+08:00">2023-05-13</time>
     </span>
 
   
@@ -363,11 +345,11 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p><strong>安装flannel服务</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/coreos/flannel/releases/download/v0.11.0/ \ </span><br><span class="line">    flannel-v0.11.0-linux-amd64.tar.gz</span><br><span class="line">mv flanneld mk-docker-opts.sh /usr/bin/</span><br></pre></td></tr></table></figure>
+          <p><strong>描述</strong></p>
+<p>假设链表中每一个节点的值都在 0 - 9 之间，那么链表整体就可以代表一个整数。给定两个这种链表，请生成代表两个整数相加值的结果链表。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2020/02/09/k8s/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%B8%89)_flannel/#more" rel="contents">
+              <a class="btn" href="/2023/05/13/%E7%AE%97%E6%B3%95/%E9%93%BE%E8%A1%A8%E7%9B%B8%E5%8A%A0/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -398,7 +380,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://periky.github.io/2020/02/08/k8s/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%BA%8C)_etcd%E9%9B%86%E7%BE%A4/">
+    <link itemprop="mainEntityOfPage" href="https://periky.github.io/2023/05/13/%E7%AE%97%E6%B3%95/%E9%93%BE%E8%A1%A8%E5%86%85%E6%8C%87%E5%AE%9A%E5%8C%BA%E5%9F%9F%E5%8F%8D%E8%BD%AC/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -416,7 +398,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/02/08/k8s/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%BA%8C)_etcd%E9%9B%86%E7%BE%A4/" class="post-title-link" itemprop="url">kubernetes集群部署(二):etcd集群</a>
+          <a href="/2023/05/13/%E7%AE%97%E6%B3%95/%E9%93%BE%E8%A1%A8%E5%86%85%E6%8C%87%E5%AE%9A%E5%8C%BA%E5%9F%9F%E5%8F%8D%E8%BD%AC/" class="post-title-link" itemprop="url">链表内指定区域反转</a>
         </h2>
 
         <div class="post-meta-container">
@@ -426,15 +408,9 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
+      
 
-      <time title="Created: 2020-02-08 23:08:52" itemprop="dateCreated datePublished" datetime="2020-02-08T23:08:52+08:00">2020-02-08</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2023-05-07 23:01:28" itemprop="dateModified" datetime="2023-05-07T23:01:28+08:00">2023-05-07</time>
+      <time title="Created: 2023-05-13 14:36:00 / Modified: 14:37:55" itemprop="dateCreated datePublished" datetime="2023-05-13T14:36:00+08:00">2023-05-13</time>
     </span>
 
   
@@ -447,10 +423,11 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="安装etcd服务"><a href="#安装etcd服务" class="headerlink" title="安装etcd服务"></a>安装etcd服务</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/etcd-io/etcd/releases/download/ \</span><br><span class="line">    v3.3.17/etcd-v3.3.18-linux-arm64.tar.gz</span><br><span class="line">tar xf etcd-v3.3.17-linux-amd64.tar.gz</span><br><span class="line">cd etcd-v3.3.17-linux-amd64</span><br><span class="line">mv etcd* /usr/bin/</span><br></pre></td></tr></table></figure>
+          <p><strong>描述</strong></p>
+<p>将一个节点数为 size 链表 m 位置到 n 位置之间的区间反转，要求时间复杂度 <em>O</em>(n)，空间复杂度 <em>O</em>(1)。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2020/02/08/k8s/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%BA%8C)_etcd%E9%9B%86%E7%BE%A4/#more" rel="contents">
+              <a class="btn" href="/2023/05/13/%E7%AE%97%E6%B3%95/%E9%93%BE%E8%A1%A8%E5%86%85%E6%8C%87%E5%AE%9A%E5%8C%BA%E5%9F%9F%E5%8F%8D%E8%BD%AC/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -481,7 +458,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://periky.github.io/2020/02/05/k8s/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%B8%80)_%E6%9C%BA%E5%99%A8%E5%88%9D%E5%A7%8B%E5%8C%96/">
+    <link itemprop="mainEntityOfPage" href="https://periky.github.io/2023/05/13/%E7%AE%97%E6%B3%95/%E5%90%88%E5%B9%B6K%E4%B8%AA%E5%B7%B2%E6%8E%92%E5%BA%8F%E7%9A%84%E9%93%BE%E8%A1%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -499,7 +476,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2020/02/05/k8s/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%B8%80)_%E6%9C%BA%E5%99%A8%E5%88%9D%E5%A7%8B%E5%8C%96/" class="post-title-link" itemprop="url">kubernetes集群部署(一):初始化</a>
+          <a href="/2023/05/13/%E7%AE%97%E6%B3%95/%E5%90%88%E5%B9%B6K%E4%B8%AA%E5%B7%B2%E6%8E%92%E5%BA%8F%E7%9A%84%E9%93%BE%E8%A1%A8/" class="post-title-link" itemprop="url">合并K个已排序的链表</a>
         </h2>
 
         <div class="post-meta-container">
@@ -509,15 +486,9 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
+      
 
-      <time title="Created: 2020-02-05 13:08:40" itemprop="dateCreated datePublished" datetime="2020-02-05T13:08:40+08:00">2020-02-05</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2023-05-08 15:27:01" itemprop="dateModified" datetime="2023-05-08T15:27:01+08:00">2023-05-08</time>
+      <time title="Created: 2023-05-13 14:33:00 / Modified: 14:34:58" itemprop="dateCreated datePublished" datetime="2023-05-13T14:33:00+08:00">2023-05-13</time>
     </span>
 
   
@@ -530,11 +501,412 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><p><strong>关闭防火墙和SELINUX</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop firewalld &amp;&amp; systemctl disable firewalld</span><br><span class="line">setenforce 0</span><br><span class="line">sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config</span><br></pre></td></tr></table></figure>
+          <p><strong>描述</strong></p>
+<p>合并 k 个升序的链表并将结果作为一个升序的链表返回其头节点。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/2020/02/05/k8s/kubernetes%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2(%E4%B8%80)_%E6%9C%BA%E5%99%A8%E5%88%9D%E5%A7%8B%E5%8C%96/#more" rel="contents">
+              <a class="btn" href="/2023/05/13/%E7%AE%97%E6%B3%95/%E5%90%88%E5%B9%B6K%E4%B8%AA%E5%B7%B2%E6%8E%92%E5%BA%8F%E7%9A%84%E9%93%BE%E8%A1%A8/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://periky.github.io/2023/05/13/%E7%AE%97%E6%B3%95/%E5%90%88%E5%B9%B6%E4%B8%A4%E4%B8%AA%E6%8E%92%E5%BA%8F%E7%9A%84%E9%93%BE%E8%A1%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="periky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="学海无涯">
+      <meta itemprop="description" content="学无止境">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | 学海无涯">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/05/13/%E7%AE%97%E6%B3%95/%E5%90%88%E5%B9%B6%E4%B8%A4%E4%B8%AA%E6%8E%92%E5%BA%8F%E7%9A%84%E9%93%BE%E8%A1%A8/" class="post-title-link" itemprop="url">合并两个排序的链表</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2023-05-13 14:28:00 / Modified: 14:32:51" itemprop="dateCreated datePublished" datetime="2023-05-13T14:28:00+08:00">2023-05-13</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p><strong>描述</strong></p>
+<p>输入两个递增的链表，单个链表的长度为n，合并这两个链表并使新链表中的节点仍然是递增排序的</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/05/13/%E7%AE%97%E6%B3%95/%E5%90%88%E5%B9%B6%E4%B8%A4%E4%B8%AA%E6%8E%92%E5%BA%8F%E7%9A%84%E9%93%BE%E8%A1%A8/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://periky.github.io/2023/05/13/%E7%AE%97%E6%B3%95/%E5%8F%8D%E8%BD%AC%E9%93%BE%E8%A1%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="periky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="学海无涯">
+      <meta itemprop="description" content="学无止境">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | 学海无涯">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/05/13/%E7%AE%97%E6%B3%95/%E5%8F%8D%E8%BD%AC%E9%93%BE%E8%A1%A8/" class="post-title-link" itemprop="url">反转链表</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-05-13 14:23:00" itemprop="dateCreated datePublished" datetime="2023-05-13T14:23:00+08:00">2023-05-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-05-14 13:07:04" itemprop="dateModified" datetime="2023-05-14T13:07:04+08:00">2023-05-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p><strong>描述</strong></p>
+<p>给定一个单链表的头结点 <strong><code>pHead</code></strong> (该头节点是有值的，比如在下图，它的val是1)，长度为n，反转该链表后，返回新链表的表头。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/05/13/%E7%AE%97%E6%B3%95/%E5%8F%8D%E8%BD%AC%E9%93%BE%E8%A1%A8/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://periky.github.io/2023/05/08/%E7%AE%97%E6%B3%95/%E5%8D%95%E9%93%BE%E8%A1%A8%E6%8E%92%E5%BA%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="periky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="学海无涯">
+      <meta itemprop="description" content="学无止境">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | 学海无涯">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/05/08/%E7%AE%97%E6%B3%95/%E5%8D%95%E9%93%BE%E8%A1%A8%E6%8E%92%E5%BA%8F/" class="post-title-link" itemprop="url">单链表排序</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-05-08 23:06:12" itemprop="dateCreated datePublished" datetime="2023-05-08T23:06:12+08:00">2023-05-08</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-05-14 11:19:25" itemprop="dateModified" datetime="2023-05-14T11:19:25+08:00">2023-05-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p><strong>描述</strong></p>
+<p>给定一个节点数为n的无序单链表，对其按升序排序。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/05/08/%E7%AE%97%E6%B3%95/%E5%8D%95%E9%93%BE%E8%A1%A8%E6%8E%92%E5%BA%8F/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://periky.github.io/2023/05/08/k8s/service%E5%BA%95%E5%B1%82%E4%B9%8Biptables%E4%B8%8Eipvs/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="periky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="学海无涯">
+      <meta itemprop="description" content="学无止境">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | 学海无涯">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/05/08/k8s/service%E5%BA%95%E5%B1%82%E4%B9%8Biptables%E4%B8%8Eipvs/" class="post-title-link" itemprop="url">k8s service底层之iptables与ipvs</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2023-05-08 15:28:22 / Modified: 23:01:17" itemprop="dateCreated datePublished" datetime="2023-05-08T15:28:22+08:00">2023-05-08</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p><em><strong>service底层实现主要有两个网络模式: iptables和ipvs. 他们都是由kube-proxy维护</strong></em></p>
+<h2 id="Iptables"><a href="#Iptables" class="headerlink" title="Iptables"></a>Iptables</h2><p><code>kube-proxy</code>通过Service的Informer感知到ApiServer的<code>Service</code>和<code>EndPoint</code>的变化情况。作为该事件的响应，它会在宿主机上创建相应的<code>iptables</code>规则。这些规则会捕获到<code>Service</code>的ClusterIp和Port的流量，并将流量按照比例重定向到<code>Service</code>的后端<code>Pod</code>中</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/05/08/k8s/service%E5%BA%95%E5%B1%82%E4%B9%8Biptables%E4%B8%8Eipvs/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://periky.github.io/2023/05/08/iptables/nat/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="periky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="学海无涯">
+      <meta itemprop="description" content="学无止境">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | 学海无涯">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/05/08/iptables/nat/" class="post-title-link" itemprop="url">iptable的地址转换</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2023-05-08 14:44:23 / Modified: 23:02:44" itemprop="dateCreated datePublished" datetime="2023-05-08T14:44:23+08:00">2023-05-08</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p><strong><font color='red'>如果想要NAT功能能够正常使用，需要开启Linux主机的核心转发功能。</font></strong></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/05/08/iptables/nat/#more" rel="contents">
                 Read more &raquo;
               </a>
             </div>
@@ -558,7 +930,7 @@
 
 
   <nav class="pagination">
-    <a class="extend prev" rel="prev" title="Previous page" aria-label="Previous page" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span>
+    <a class="extend prev" rel="prev" title="Previous page" aria-label="Previous page" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" title="Next page" aria-label="Next page" href="/page/4/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>

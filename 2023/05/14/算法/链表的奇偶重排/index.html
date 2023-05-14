@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"periky.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.16.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="描述给定一个单链表，请设定一个函数，将链表的奇数位节点和偶数位节点分别放在一起，重排后输出。注意是节点的编号而非节点的数值。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="链表的奇偶重排">
+<meta property="og:url" content="https://periky.github.io/2023/05/14/%E7%AE%97%E6%B3%95/%E9%93%BE%E8%A1%A8%E7%9A%84%E5%A5%87%E5%81%B6%E9%87%8D%E6%8E%92/index.html">
+<meta property="og:site_name" content="学海无涯">
+<meta property="og:description" content="描述给定一个单链表，请设定一个函数，将链表的奇数位节点和偶数位节点分别放在一起，重排后输出。注意是节点的编号而非节点的数值。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://periky.github.io/images/%E9%93%BE%E8%A1%A8%E7%9A%84%E5%A5%87%E5%81%B6%E9%87%8D%E6%8E%92.png">
+<meta property="article:published_time" content="2023-05-14T03:10:57.647Z">
+<meta property="article:modified_time" content="2023-05-14T03:59:01.647Z">
+<meta property="article:author" content="periky">
+<meta property="article:tag" content="算法">
+<meta property="article:tag" content="链表">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://periky.github.io/images/%E9%93%BE%E8%A1%A8%E7%9A%84%E5%A5%87%E5%81%B6%E9%87%8D%E6%8E%92.png">
+
+
+<link rel="canonical" href="https://periky.github.io/2023/05/14/%E7%AE%97%E6%B3%95/%E9%93%BE%E8%A1%A8%E7%9A%84%E5%A5%87%E5%81%B6%E9%87%8D%E6%8E%92/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://periky.github.io/2023/05/14/%E7%AE%97%E6%B3%95/%E9%93%BE%E8%A1%A8%E7%9A%84%E5%A5%87%E5%81%B6%E9%87%8D%E6%8E%92/","path":"/2023/05/14/算法/链表的奇偶重排/","title":"链表的奇偶重排"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>链表的奇偶重排 | 学海无涯</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">学海无涯</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay hungry, Stay foolish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">periky</p>
+  <div class="site-description" itemprop="description">学无止境</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://periky.github.io/2023/05/14/%E7%AE%97%E6%B3%95/%E9%93%BE%E8%A1%A8%E7%9A%84%E5%A5%87%E5%81%B6%E9%87%8D%E6%8E%92/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="periky">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="学海无涯">
+      <meta itemprop="description" content="学无止境">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="链表的奇偶重排 | 学海无涯">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          链表的奇偶重排
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2023-05-14 11:10:57 / Modified: 11:59:01" itemprop="dateCreated datePublished" datetime="2023-05-14T11:10:57+08:00">2023-05-14</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><strong>描述</strong><br>给定一个单链表，请设定一个函数，将链表的奇数位节点和偶数位节点分别放在一起，重排后输出。<br>注意是节点的编号而非节点的数值。</p>
+<span id="more"></span>
+
+<p><em>数据范围：</em> 节点数量满足 <strong>0≤n≤10<sup>5</sup></strong> ,节点中的值都满足 <strong>0≤val≤1000</strong><br><em>要求：</em> 空间复杂度<em>O</em>(n),时间复杂度<em>O</em>(n)</p>
+<p><strong>示例1</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">输入:  &#123;1,4,6,3,7&#125;</span><br><span class="line">返回:  &#123;1,6,7,4,3&#125;</span><br><span class="line">说明:  1-&gt;4-&gt;6-&gt;3-&gt;7-&gt;NULL</span><br><span class="line">       重排后为</span><br><span class="line">       1-&gt;6-&gt;7-&gt;4-&gt;3-&gt;NULL</span><br><span class="line">       奇数位节点有1,6,7，偶数位节点有4,3。重排后为1,6,7,4,3</span><br></pre></td></tr></table></figure>
+
+<p><strong>备注</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">链表长度不大于200000。每个数范围均在int内。</span><br></pre></td></tr></table></figure>
+
+<p><strong>题解</strong></p>
+<blockquote>
+<p>双指针,分别指向第一个节点(奇节点)和第二个节点(偶节点)</p>
+</blockquote>
+<ul>
+<li>先保存奇数头节点和偶数头节点（避免引用中的属性发生变化）</li>
+<li>一个引用指向奇数节点，一个引用指向偶数节点，开始往后处理结点指向</li>
+<li>结束的条件是，偶数节点不为null且偶数节点的next不为null</li>
+<li>最后将偶数头节点挂到奇数链表尾节点</li>
+</ul>
+<p><img src="/images/%E9%93%BE%E8%A1%A8%E7%9A%84%E5%A5%87%E5%81%B6%E9%87%8D%E6%8E%92.png"></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> ListNode <span class="keyword">struct</span>&#123;</span><br><span class="line">    Val <span class="type">int</span></span><br><span class="line">    Next *ListNode</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * @param head ListNode类 </span></span><br><span class="line"><span class="comment"> * @return ListNode类</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">oddEvenList</span><span class="params">( head *ListNode )</span></span> *ListNode &#123;</span><br><span class="line">    <span class="comment">// write code here</span></span><br><span class="line">    <span class="keyword">if</span> head == <span class="literal">nil</span> || head.Next == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> head</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 奇数链表头</span></span><br><span class="line">    odd := head</span><br><span class="line">    oddHead := odd</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 偶数链表头</span></span><br><span class="line">    even := head.Next</span><br><span class="line">    evenHead := even</span><br><span class="line"></span><br><span class="line">    node := head.Next.Next</span><br><span class="line">    <span class="keyword">for</span> node != <span class="literal">nil</span> &#123;</span><br><span class="line">        odd.Next = node</span><br><span class="line">        odd = odd.Next</span><br><span class="line">        node = node.Next</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> node != <span class="literal">nil</span> &#123;</span><br><span class="line">            even.Next = node</span><br><span class="line">            even = even.Next</span><br><span class="line">            node = node.Next</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    even.Next = node</span><br><span class="line">    odd.Next = evenHead</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> oddHead</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
+              <a href="/tags/%E9%93%BE%E8%A1%A8/" rel="tag"># 链表</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/05/13/%E7%AE%97%E6%B3%95/%E5%88%A0%E9%99%A4%E9%93%BE%E8%A1%A8%E4%B8%AD%E5%80%92%E6%95%B0%E7%AC%ACk%E4%B8%AA%E8%8A%82%E7%82%B9/" rel="prev" title="删除链表中倒数第k个节点">
+                  <i class="fa fa-chevron-left"></i> 删除链表中倒数第k个节点
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/05/14/%E7%AE%97%E6%B3%95/%E5%88%A0%E9%99%A4%E6%9C%89%E5%BA%8F%E9%93%BE%E8%A1%A8%E4%B8%AD%E9%87%8D%E5%A4%8D%E7%9A%84%E5%85%83%E7%B4%A01/" rel="next" title="删除有序链表中重复的元素(一)">
+                  删除有序链表中重复的元素(一) <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">periky</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
