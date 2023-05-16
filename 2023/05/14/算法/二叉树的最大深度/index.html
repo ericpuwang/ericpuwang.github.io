@@ -27,7 +27,7 @@
 <meta property="og:description" content="描述求给定二叉树的最大深度，深度是指树的根节点到任一叶子节点路径上节点的数量。最大深度是所有叶子节点的深度的最大值。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-05-14T07:32:00.000Z">
-<meta property="article:modified_time" content="2023-05-14T07:37:47.265Z">
+<meta property="article:modified_time" content="2023-05-15T13:03:37.054Z">
 <meta property="article:author" content="periky">
 <meta property="article:tag" content="算法">
 <meta property="article:tag" content="二叉树">
@@ -119,7 +119,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-count">45</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -179,9 +179,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2023-05-14 15:32:00 / Modified: 15:37:47" itemprop="dateCreated datePublished" datetime="2023-05-14T15:32:00+08:00">2023-05-14</time>
+      <time title="Created: 2023-05-14 15:32:00" itemprop="dateCreated datePublished" datetime="2023-05-14T15:32:00+08:00">2023-05-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-05-15 21:03:37" itemprop="dateModified" datetime="2023-05-15T21:03:37+08:00">2023-05-15</time>
     </span>
 
   
@@ -195,6 +201,12 @@
     
     <div class="post-body" itemprop="articleBody"><p><strong>描述</strong><br>求给定二叉树的最大深度，深度是指树的根节点到任一叶子节点路径上节点的数量。最大深度是所有叶子节点的深度的最大值。</p>
 <span id="more"></span>
+
+<p><strong>题解</strong></p>
+<blockquote>
+<p>DFS</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> TreeNode <span class="keyword">struct</span> &#123;</span><br><span class="line">    Val <span class="type">int</span></span><br><span class="line">    Left *TreeNode</span><br><span class="line">    Right *TreeNode</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @param root TreeNode类</span></span><br><span class="line"><span class="comment"> * @return int整型</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">maxDepth</span><span class="params">( root *TreeNode )</span></span> <span class="type">int</span> &#123;</span><br><span class="line">    <span class="comment">// write code here</span></span><br><span class="line">    <span class="keyword">if</span> root == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> max(maxDepth(root.Left), maxDepth(root.Right)) + <span class="number">1</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">max</span><span class="params">(left, rigth <span class="type">int</span>)</span></span> <span class="type">int</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> left &gt; rigth &#123;</span><br><span class="line">        <span class="keyword">return</span> left</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> rigth</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
     </div>
 
     
@@ -216,6 +228,9 @@
                 </a>
             </div>
             <div class="post-nav-item">
+                <a href="/2023/05/15/%E7%AE%97%E6%B3%95/%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E5%92%8C%E4%B8%BA%E6%9F%90%E4%B8%80%E5%80%BC%E7%9A%84%E8%B7%AF%E5%BE%84(%E4%B8%80)/" rel="next" title="二叉树中和为某一值的路径(一)">
+                  二叉树中和为某一值的路径(一) <i class="fa fa-chevron-right"></i>
+                </a>
             </div>
           </div>
     </footer>
