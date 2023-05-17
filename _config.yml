@@ -8,7 +8,7 @@ subtitle: 'Stay hungry, Stay foolish'
 description: '学无止境'
 keywords:
 author: periky
-language: en
+language: zh-CN
 timezone: 'Asia/Shanghai'
 
 # URL
@@ -97,8 +97,34 @@ ignore: []
 
 # Extensions
 ## Plugins: https://hexo.io/plugins/
+plugin:
+- hexo-generator-feed
+
+#Feed Atom
+feed:
+  enable: true
+  type: atom
+  path: atom.xml
+  limit: 20
+  hub:
+  content:
+  content_limit: 140
+  content_limit_delim: ' '
+  order_by: -date
+  icon: icon.png
+  autodiscovery: true
+  template:
+
 ## Themes: https://hexo.io/themes/
 theme: next
+
+# Search
+## https://hexo-next.readthedocs.io/zh_CN/latest/next/advanced/%E6%90%9C%E7%B4%A2%E6%9C%8D%E5%8A%A1/
+search:
+  path: search.xml
+  field: post
+  content: true
+  format: html
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
