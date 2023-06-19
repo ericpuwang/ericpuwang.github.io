@@ -1,7 +1,8 @@
 ---
 title: kubernetes集群部署(一):初始化
 date: 2020-02-05 13:08:40
-tags: kubernetes
+tags: 
+  - kubernetes
 ---
 
 ## 初始化

@@ -1,7 +1,8 @@
 ---
 title: 通过kube-apiserver访问kube-dashboard
 date: 2020-05-16 13:08:40
-tags: kubernetes
+tags:
+  - kubernetes
 ---
 
 # 制作证书

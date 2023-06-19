@@ -1,7 +1,8 @@
 ---
 title: kubernetes集群部署(三):flannel集群
 date: 2020-02-09 13:08:40
-tags: kubernetes
+tags:
+  - kubernetes
 ---
 
 **安装flannel服务**

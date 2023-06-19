@@ -1,7 +1,8 @@
 ---
 title: kubernetes集群部署(二):etcd集群
 date: 2020-02-08 23:08:52
-tags: kubernetes
+tags:
+  - kubernetes
 ---
 
 ## 安装etcd服务

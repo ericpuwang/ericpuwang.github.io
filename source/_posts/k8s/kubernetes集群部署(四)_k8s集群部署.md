@@ -1,7 +1,8 @@
 ---
 title: kubernetes机器部署(四):k8s集群部署
 date: 2020-02-09 15:08:40
-tags: kubernetes
+tags:
+  - kubernetes
 ---
 
 ## 获取二进制文件
