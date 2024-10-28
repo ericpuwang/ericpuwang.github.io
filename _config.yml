@@ -100,3 +100,23 @@ deploy:
   type: git
   repo: https://github.com/ericpuwang/ericpuwang.github.io.git
   branch: ['blog']
+
+# Markdown
+## https://github.com/CHENXCHEN/hexo-renderer-markdown-it-plus
+markdown_it_plus:
+  highlight: true
+  html: true
+  xhtmlOut: true
+  breaks: true
+  langPrefix:
+  linkify: true
+  typographer:
+  quotes: “”‘’
+  pre_class: highlight
+
+# Search
+## https://github.com/wzpan/hexo-generator-search
+search:
+  path: search.xml
+  field: post
+  content: true

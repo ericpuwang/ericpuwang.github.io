@@ -64,10 +64,10 @@
     <div class="post-content">
       <div class="post-title"><%- page.title %></div>
       <div class="post-attach">
-        <span class="post-pubtime">
+        <!-- <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="<%= __('updateTime') %>"></i>
           <%- page.updated.format("YYYY-MM-DD HH:mm:ss") %>
-        </span>
+        </span> -->
         <% for(item of theme.navbar) {
           if (item.key === 'tags' && item.enable) {
             if(page.tags && page.tags.length > 0) { %>
@@ -113,10 +113,10 @@
             <% } %>
           </div>
           <div class="post-attach">
-            <span class="post-pubtime">
+            <!-- <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="<%= __('updateTime') %>"></i>
               <%- page.updated.format("YYYY-MM-DD HH:mm:ss") %>
-            </span>
+            </span> -->
             <% for(item of theme.navbar) {
               if (item.key === 'tags' && item.enable) {
                 if(page.tags && page.tags.length > 0) { %>
