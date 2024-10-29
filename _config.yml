@@ -113,7 +113,13 @@ markdown_it_plus:
   typographer:
   quotes: “”‘’
   pre_class: highlight
-
+  plugins:
+    - plugin:
+      name: '@iktakahiro/markdown-it-katex'
+      enable: false
+    - plugin:
+      name: '@andatoshiki/markdown-it-katex'
+      enable: true
 # Search
 ## https://github.com/wzpan/hexo-generator-search
 search:
