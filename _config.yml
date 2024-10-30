@@ -101,25 +101,6 @@ deploy:
   repo: https://github.com/ericpuwang/ericpuwang.github.io.git
   branch: ['blog']
 
-# Markdown
-## https://github.com/CHENXCHEN/hexo-renderer-markdown-it-plus
-markdown_it_plus:
-  highlight: true
-  html: true
-  xhtmlOut: true
-  breaks: true
-  langPrefix:
-  linkify: true
-  typographer:
-  quotes: “”‘’
-  pre_class: highlight
-  plugins:
-    - plugin:
-      name: '@iktakahiro/markdown-it-katex'
-      enable: false
-    - plugin:
-      name: '@andatoshiki/markdown-it-katex'
-      enable: true
 # Search
 ## https://github.com/wzpan/hexo-generator-search
 search:
