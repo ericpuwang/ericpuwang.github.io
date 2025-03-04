@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="ericpuwang" />
+  <!-- Open Graph Description 简短摘要-->
+  
+  <!-- 用于搜索引擎的文章摘要 -->
+  
+  
+  
+  <title>
+    
+      Node.js的内存控制 
+      
+      
+      |
+    
+     Hexo
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.jpeg">
+    <link rel="icon" href="/images/favicon.jpeg">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/font.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  <script defer type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" rel="stylesheet">
+  <script defer type="text/javascript" src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.jpeg" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">ericpuwang</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Node.js的内存控制</div>
+      <div class="post-attach">
+        <!-- <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2025-03-04 06:20:20
+        </span> -->
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Node-js/" title="Node.js">
+                    #Node.js
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E5%86%85%E5%AD%98%E6%8E%A7%E5%88%B6/" title="内存控制">
+                    #内存控制
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" title="垃圾回收">
+                    #垃圾回收
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="v8的垃圾回收机制和内存限制">V8的垃圾回收机制和内存限制</h1>
+<blockquote>
+<p>Node.js是一个构建在Chrome的JavaScript运行时上的平台</p>
+</blockquote>
+<h2 id="v8的内存限制">V8的内存限制</h2>
+<blockquote>
+<p>Node.js基于V8构建，故在Node.js中使用JavaScript对象基本上都是通过V8自己的方式来进行分配和管理</p>
+</blockquote>
+<p>在Node中通过JavaScript使用内存时就会发现只能使用部分内存（64位系统下约为1.4
+GB,32位系统下约为0.7 GB）</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// https://github.com/v8/v8/blob/main/src/heap/heap.cc#L5045</span></span><br><span class="line"><span class="comment">// 64bit机器: 1400MB</span></span><br><span class="line"><span class="comment">// 32bit机器: 700MB</span></span><br><span class="line"><span class="type">size_t</span> max_old_generation_size = <span class="number">700ul</span> * (kSystemPointerSize / <span class="number">4</span>) * MB;</span><br><span class="line"></span><br><span class="line"><span class="comment">// https://github.com/v8/v8/blob/main/src/heap/heap.cc#L4968</span></span><br><span class="line"><span class="comment">// max_new_space_size =  2 * max_semi_space_size</span></span><br><span class="line"><span class="type">size_t</span> max_semi_space_size =</span><br><span class="line">      (v8_flags.minor_ms ? v8_flags.minor_ms_max_new_space_capacity_mb</span><br><span class="line">                         : v8_flags.scavenger_max_new_space_capacity_mb) *</span><br><span class="line">      kMaxSemiSpaceCapacityBaseUnit;</span><br><span class="line"></span><br><span class="line"><span class="comment">// https://github.com/v8/v8/blob/main/src/heap/heap.cc#L263</span></span><br><span class="line"><span class="comment">// 堆内存最大保留空间</span></span><br><span class="line"><span class="type">size_t</span> <span class="title function_">Heap::MaxReserved</span><span class="params">()</span> <span class="type">const</span> &#123;</span><br><span class="line">  <span class="type">const</span> <span class="type">size_t</span> kMaxNewLargeObjectSpaceSize = max_semi_space_size_;</span><br><span class="line">  <span class="keyword">return</span> static_cast&lt;<span class="type">size_t</span>&gt;(</span><br><span class="line">      (v8_flags.minor_ms ? <span class="number">1</span> : <span class="number">2</span>) * max_semi_space_size_ +</span><br><span class="line">      kMaxNewLargeObjectSpaceSize + max_old_generation_size());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>JS单线程机制</code>:
+作为浏览器的脚本语言，JS的主要用途是与用户交互以及操作DOM，那么这也决定了其作为单线程的本质，单线程意味着执行的代码必须按顺序执行，在同一时间只能处理一个任务</li>
+<li><code>垃圾回收机制</code>:
+垃圾回收本身也是一件非常耗时的操作，假设V8的堆内存为1.5G，那么V8做一次小的垃圾回收需要50ms以上，而做一次非增量式回收甚至需要1s以上，可见其耗时之久，而在这1s的时间内，浏览器一直处于等待的状态，同时会失去对用户的响应，如果有动画正在运行，也会造成动画卡顿掉帧的情况，严重影响应用程序的性能</li>
+</ul>
+<h2 id="v8的对象分配">V8的对象分配</h2>
+<p>在V8中，所有的JavaScript对象都是在堆上分配的</p>
+<h3 id="内存使用量查询">内存使用量查询</h3>
+<p>获取Node.js进程的内存使用量（以字节为单位）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">https://nodejs.cn/api/process.html#process_process_memoryusage</span></span><br><span class="line">~ node</span><br><span class="line">Welcome to Node.js v18.20.4.</span><br><span class="line">Type &quot;.help&quot; for more information.</span><br><span class="line"><span class="meta prompt_">&gt; </span><span class="language-bash">process.memoryUsage()</span></span><br><span class="line">&#123;</span><br><span class="line">  rss: 48644096,         # 常驻集大小，是进程在主内存设备(即总分配内存的子集)中占用的空间量(包括JavaScript和C++)</span><br><span class="line">  heapTotal: 7192576,    # V8 的内存使用量</span><br><span class="line">  heapUsed: 4961456,     # V8 的内存使用量</span><br><span class="line">  external: 1113471,     # 绑定到V8管理的JavaScript对象的C++对象的内存使用量(不受V8垃圾回收策略控制)</span><br><span class="line">  arrayBuffers: 10455    # 为ArrayBuffer和SharedArrayBuffer分配的内存，包括所有的Node.js Buffer。也包含在external值中</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta prompt_">&gt;</span></span><br></pre></td></tr></table></figure>
+<p><strong>当使用<code>Worker</code>线程时，则<code>rss</code>将是对整个进程都有效的值，而其他字段仅涉及当前线程。</strong></p>
+<h3 id="调整v8运行时内存">调整V8运行时内存</h3>
+<blockquote>
+<p>下述参数仅在V8初始化时生效,一旦生效就不能动态改变</p>
+</blockquote>
+<ul>
+<li><code>--max-old-space-size</code>: 调整老生代堆内存空间大小.
+单位<code>Mbytes</code></li>
+<li><code>--max-semi-space-size</code>:
+调整semi空间大小，新生代内存空间大小是该值的两倍.
+单位<code>Mbytes</code></li>
+</ul>
+<h2 id="v8的垃圾回收机制">V8的垃圾回收机制</h2>
+<p>V8的垃圾回收策略主要是基于<code>分代式垃圾回收机制</code>，其根据对象的存活时间将内存的垃圾回收进行不同的分代，然后对不同的分代采用不同的垃圾回收算法</p>
+<h3 id="v8的内存结构">V8的内存结构</h3>
+<ul>
+<li>新生代内存区 <code>Young Generation</code>或<code>New Space</code>:
+大多数对象开始被分配在该区域，该区域相对较小但是gc频率高。该区域被分为两半，一半用来分配内存，另一半用于在垃圾回收时将需要保留的对象复制过来</li>
+<li>老生代内存区 <code>Old Generation</code>或<code>Old Space</code>:
+一个对象经过多次复制依然存活时，它将会被认为是生命周期较长的对象。这种较长生命周期的对象随后会被移动到老生代中，采用新的算法进行管理。老生代又分为<code>老生代指针区</code>和<code>老生代数据区</code></li>
+<li>大对象区 <code>Large Object Space</code>:
+存放体积超越其他区域大小的对象，每个对象都会有自己的内存，垃圾回收不会移动大对象区</li>
+<li>代码区 <code>Code Space</code>:
+代码对象，会被分配在这里，唯一拥有执行权限的内存区域</li>
+<li>Map区 <code>Map Space</code>:
+存放对象的Map信息。每个Map对象固定大小，为了快速定位，所以将该空间单独出来。</li>
+</ul>
+<h3 id="新生代">新生代</h3>
+<p>新生代的对象主要通过<code>Scavenge</code>算法进行垃圾回收。在<code>Scavenge</code>算法的基础上，主要采用了<code>Cheney</code>算法。<code>Cheney</code>算法是一种采用复制的方式实现的垃圾回收算法。它将堆内存一分为二，每一部分空间称为semispace。在这两个semispace空间中，只有一个处于使用中，另一个则处于闲置状态。处于使用状态的semispace空间称为<strong>From</strong>空间，处于闲置状态的空间称为<strong>To</strong>空间。当我们分配对象时，先是在From空间中进行分配。当开始进行垃圾回收时，会检查From空间中的存活对象，这些存活对象将被复制到To空间中，而非存活对象占用的空间将会被释放。完成复制后，From空间和To空间的角色发生对换。简而言之，<strong>在垃圾回收的过程中，就是通过将存活对象在两个semispace空间之间进行复制</strong></p>
+<h3 id="老生代">老生代</h3>
+<p>新生代对象被移动到老生代中的限制条件</p>
+<ul>
+<li>对象是否经历过<code>Scavenge</code>回收</li>
+<li>To空间内存占用比超过限制。默认限制为<strong>25%</strong></li>
+</ul>
+<p>老生代垃圾回收算法:
+<code>Mark-Sweep(标记清除) &amp; Mark-Compact(标记整理)</code></p>
+<p>对于老生代中的对象，由于存活对象占较大比重，再采用Scavenge的方式会有两个问题:</p>
+<ul>
+<li>存活对象较多，复制存活对象的效率将会很低</li>
+<li>浪费一半的空间</li>
+</ul>
+<p><code>Mark-Sweep(标记清除)</code>分为<code>标记</code>和<code>清除</code>两个阶段，在标记阶段遍历堆中所有对象，并标记活着的对象，在随后的清除阶段，只清除没有标记的对象。<code>Mark-Sweep</code>算法主要是通过判断某个对象是否可以被访问到，从而知道该对象是否应该被回收，具体步骤如下:</p>
+<ul>
+<li><p>垃圾回收器会在内部构件一个根列表，用于从根结点出发寻找那些可以被访问到的变量。根结点列表：</p>
+<ul>
+<li>全局对象</li>
+<li>本地函数的局部变量和参数</li>
+<li>当前嵌套调用链上的其他函数的变量和参数</li>
+</ul></li>
+<li><p>从根结点出发，遍历所有子结点，并将其标记为活动的。根结点不可达的地方即位不活动的，被视为垃圾</p></li>
+<li><p>垃圾回收器释放所有非活动的内存块，并将其归还给操作系统</p></li>
+</ul>
+<p><code>Mark-Sweep</code>算法最大的问题是在进行一次标记清除回收后，内存空间会出现不连续的状态。内存碎片会导致后续的内存分配问题，提前触发垃圾回收(<em>不必要</em>)。为了解决内存碎片问题，提出了<code>Mark-Compact</code>算法</p>
+<p><code>Mark-Compact(标记整理)</code>是在<code>Mark-Sweep</code>算法的基础上演变而来。它们的差别在于对象在标记为死亡后，在整理的过程中，将活着的对象往一端移动，移动完成后，直接清理掉边界外的内存</p>
+<p><img src="/images/Mark-Compact垃圾回收示意图.jpg" /></p>
+<p><font style="color:red"><strong>垃圾回收算法的简单对比</strong></font></p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">回收算法</th>
+<th style="text-align: left;">Mark-Sweep</th>
+<th style="text-align: left;">Mark-Compact</th>
+<th style="text-align: left;">Scavenge</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">速度</td>
+<td style="text-align: left;">中等</td>
+<td style="text-align: left;">最慢</td>
+<td style="text-align: left;">最快</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">空间开销</td>
+<td style="text-align: left;">少(有碎片)</td>
+<td style="text-align: left;">少(无碎片)</td>
+<td style="text-align: left;">双倍空间(无碎片)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">是否移动对象</td>
+<td style="text-align: left;">否</td>
+<td style="text-align: left;">是</td>
+<td style="text-align: left;">是</td>
+</tr>
+</tbody>
+</table>
+<p>V8主要使用<code>Mark-Sweep</code>，在空间不足以对从新生代中晋升过来的对象进行分配时才使用<code>Mark-Compact</code></p>
+<p>由于JS的单线程机制，垃圾回收的过程会阻碍主线程同步任务的执行，待执行完垃圾回收后才会再次恢复执行主任务的逻辑，这种行为被称为<code>全停顿(stop-the-world)</code>。为了减少垃圾回收带来的停顿时间，V8引擎又引入了<code>Incremental Marking(增量标记)</code>的概念，即将原本需要一次性遍历堆内存的操作改为增量标记的方式，先标记堆内存的一部分对象，然后暂停，将执行权重新交回JS主线程，待主线程任务执行完毕后再从原来暂停标记的地方继续标记，直到标记完整个堆内存。</p>
+<blockquote>
+<p>V8在经过增量标记的改进后，垃圾回收的最大停顿时间可以减少到原本的1/6左右</p>
+</blockquote>
+<p><img src="/images/Node.js增量标记示意图.jpg" /></p>
+<p>得益于增量标记的好处，V8引擎后续引入了<code>延迟清理(lazy sweeping)</code>和<code>增量式清理(incremental compaction)</code>，让清理和整理的过程也变成增量式的。同时为了充分利用多核CPU的性能，也将引入<code>并行标记</code>和<code>并行清理</code>，进一步地减少垃圾回收对主线程的影响，为应用提升更多的性能</p>
+<h1 id="如何避免内存泄露">如何避免内存泄露</h1>
+<ul>
+<li>尽可能少的创建全局变量</li>
+<li>手动清除定时器</li>
+<li>少用闭包</li>
+<li>清除DOM引用</li>
+<li>弱引用</li>
+</ul>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a
+target="_blank" rel="noopener" href="https://v8.dev/blog/concurrent-marking">https://v8.dev/blog/concurrent-marking</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://www.cnblogs.com/cangqinglang/p/12668374.html">https://www.cnblogs.com/cangqinglang/p/12668374.html</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://github.com/li-jia-nan/my-blog/issues/20">https://github.com/li-jia-nan/my-blog/issues/20</a></li>
+</ul>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2024/10/29/k8s/kind/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <!-- <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2025-03-04 06:20:20
+            </span> -->
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Node-js/" title="Node.js">
+                        #Node.js
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E5%86%85%E5%AD%98%E6%8E%A7%E5%88%B6/" title="内存控制">
+                        #内存控制
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" title="垃圾回收">
+                        #垃圾回收
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2024/11/01/%E7%AE%97%E6%B3%95/B%E6%A0%91/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#v8%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6%E5%92%8C%E5%86%85%E5%AD%98%E9%99%90%E5%88%B6"><span class="toc-text">V8的垃圾回收机制和内存限制</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#v8%E7%9A%84%E5%86%85%E5%AD%98%E9%99%90%E5%88%B6"><span class="toc-text">V8的内存限制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#v8%E7%9A%84%E5%AF%B9%E8%B1%A1%E5%88%86%E9%85%8D"><span class="toc-text">V8的对象分配</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E4%BD%BF%E7%94%A8%E9%87%8F%E6%9F%A5%E8%AF%A2"><span class="toc-text">内存使用量查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%83%E6%95%B4v8%E8%BF%90%E8%A1%8C%E6%97%B6%E5%86%85%E5%AD%98"><span class="toc-text">调整V8运行时内存</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#v8%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6"><span class="toc-text">V8的垃圾回收机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#v8%E7%9A%84%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84"><span class="toc-text">V8的内存结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B0%E7%94%9F%E4%BB%A3"><span class="toc-text">新生代</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%80%81%E7%94%9F%E4%BB%A3"><span class="toc-text">老生代</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2"><span class="toc-text">如何避免内存泄露</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+    </ul>
+  </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Node.js%E7%9A%84%E5%86%85%E5%AD%98%E6%8E%A7%E5%88%B6 + '&url=' + https%3A%2F%2Fericpuwang.github.io%2F2024%2F10%2F31%2Fnodejs%2Fnodejs%25E7%259A%2584%25E5%2586%2585%25E5%25AD%2598%25E6%258E%25A7%25E5%2588%25B6%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://ericpuwang.github.io/2024/10/31/nodejs/nodejs%E7%9A%84%E5%86%85%E5%AD%98%E6%8E%A7%E5%88%B6/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

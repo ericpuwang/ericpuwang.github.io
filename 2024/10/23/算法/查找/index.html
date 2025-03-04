@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="ericpuwang" />
+  <!-- Open Graph Description 简短摘要-->
+  
+  <!-- 用于搜索引擎的文章摘要 -->
+  
+  
+  
+  <title>
+    
+      查找 
+      
+      
+      |
+    
+     Hexo
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.jpeg">
+    <link rel="icon" href="/images/favicon.jpeg">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/font.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  <script defer type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" rel="stylesheet">
+  <script defer type="text/javascript" src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.jpeg" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">ericpuwang</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">查找</div>
+      <div class="post-attach">
+        <!-- <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2025-03-04 06:20:20
+        </span> -->
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E7%AE%97%E6%B3%95/" title="算法">
+                    #算法
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E6%9F%A5%E6%89%BE%E7%AE%97%E6%B3%95/" title="查找算法">
+                    #查找算法
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="线性表的查找">线性表的查找</h1>
+<blockquote>
+<p>适用于静态查找表</p>
+</blockquote>
+<p><strong>数据类型</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    KeyType key; <span class="comment">// 关键字域</span></span><br><span class="line">    InfoType otherinfo; <span class="comment">// 其他域</span></span><br><span class="line">&#125;ElemType;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    ElemType *R; <span class="comment">// 存储空间基地址</span></span><br><span class="line">    <span class="type">int</span> length;  <span class="comment">// 当前长度</span></span><br><span class="line">&#125;SSTable;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="顺序查找">顺序查找</h2>
+<blockquote>
+<p>从表的一端开始，依次将记录的关键字和给定值进行比价，若某个记录的关键字和给定值相等，则查找成功；反之，若扫描整个表后，仍为找到关键字和给定值相等的记录，则查找失败。时间复杂度<code>O(n)</code></p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 此假设元素从st.R[1]开始顺序向后存放，st.R[0]闲置不用，查找时从表的最后开始比较</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">Search_Seq</span><span class="params">(SSTable st, KeyType key)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = st.length; i &gt;= <span class="number">1</span>; i--)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (st.R[i].key == key)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 对st.R[0]的关键字赋值key，在此，st.R[0]起到了监视哨的作用</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">Search_Seq2</span><span class="params">(SSTable st, KeyType key)</span></span><br><span class="line">&#123;</span><br><span class="line">    st.R[<span class="number">0</span>].key = key;</span><br><span class="line">	<span class="type">int</span> i = st.length;</span><br><span class="line">    <span class="keyword">for</span> (; st.R[i].key != key; i--);</span><br><span class="line">    <span class="keyword">return</span> i;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="折半查找">折半查找</h2>
+<blockquote>
+<p>折半查找也称为二分查找，拆半查找要求线性表必须采用顺序存储结构，而且表中元素按关键字有序排列。时间复杂度<span
+class="math inline">\(O(log_2n)\)</span></p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在有序表st中折半查找其关键字等于key的数据元素。若找到，则函数值为该元素在表中的位置，否则为0</span></span><br><span class="line"><span class="comment">// 有序表st默认递增排序</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">Search_Bin</span><span class="params">(SSTable st, KeyType key)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> low = <span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span> higt = st.length;</span><br><span class="line">    <span class="keyword">while</span> (low &lt; higt)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">int</span> mid = (low + higt) / <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span> (key == st.R[mid].key)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> mid;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (key &lt; st.R[mid].key)</span><br><span class="line">        &#123;</span><br><span class="line">            higt = mid - <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            low = mid + <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="分块查找">分块查找</h2>
+<blockquote>
+<p>分块查找又称索引顺序查找。在该查找方法中，除表本身以外，尚需建立一个“索引表”。时间复杂度<span
+class="math inline">\(O(\sqrt n)\)</span></p>
+</blockquote>
+<p><strong>步骤</strong></p>
+<ol type="1">
+<li><strong>分块</strong>：将数组分成若干个大小相同的块（最后一个块可能较小）</li>
+<li><strong>查找块</strong>：通过比较目标值与每个块的起始元素，确定目标值可能所在的块</li>
+<li><strong>顺序查找</strong>：在确定的块内进行顺序查找，找到目标值</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;math.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> BLOCK_SIZE 3 <span class="comment">// 定义块的大小</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 分块查找函数</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">blockSearch</span><span class="params">(<span class="type">int</span> arr[], <span class="type">int</span> size, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">    <span class="type">int</span> blockCount = (<span class="type">int</span>)<span class="built_in">ceil</span>((<span class="type">double</span>)size / BLOCK_SIZE); <span class="comment">// 计算块的数量</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 查找目标值所在的块</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; blockCount; i++) &#123;</span><br><span class="line">        <span class="comment">// 计算当前块的起始和结束索引</span></span><br><span class="line">        <span class="type">int</span> start = i * BLOCK_SIZE;</span><br><span class="line">        <span class="type">int</span> end = (i + <span class="number">1</span>) * BLOCK_SIZE &lt; size ? (i + <span class="number">1</span>) * BLOCK_SIZE : size;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 如果目标值在当前块的范围内</span></span><br><span class="line">        <span class="keyword">if</span> (target &gt;= arr[start] &amp;&amp; target &lt; arr[end - <span class="number">1</span>]) &#123;</span><br><span class="line">            <span class="comment">// 在当前块内进行顺序查找</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> j = start; j &lt; end; j++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (arr[j] == target) &#123;</span><br><span class="line">                    <span class="keyword">return</span> j; <span class="comment">// 找到目标值，返回索引</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>; <span class="comment">// 如果在块内找到了，退出循环</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>; <span class="comment">// 未找到目标值，返回-1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<style>
+#lineTd {
+    background:#FFFFFF url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxsaW5lIHgxPSIwIiB5MT0iMCIgeDI9IjEwMCUiIHkyPSIxMDAlIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjEiLz48L3N2Zz4=) no-repeat 100% center;
+    width: 200px;
+}
+
+#td {
+    text-align: center;
+}
+</style>
+<escape>
+<table>
+<caption style="color: red">
+顺序查找、折半查找和分块查找的比较
+</caption>
+<tr>
+<th id="lineTd">
+<span style="float:left;margin-top: 20px">比较项目</span> <span
+style="right:left;margin-top: -10px">查找方法</span>
+</th>
+<th>
+顺序查找
+</th>
+<th>
+折半查找
+</th>
+<th>
+分块查找
+</th>
+</tr>
+<tr>
+<td>
+查找时间复杂度
+</td>
+<td>
+<span class="math inline">\(O(n)\)</span>
+</td>
+<td>
+<span class="math inline">\(O(log_2n)\)</span>
+</td>
+<td>
+与确定所在块的查找方法有关
+</td>
+</tr>
+<tr>
+<td>
+特点
+</td>
+<td>
+算法简单，对表结构物任何要求，但查找效率低
+</td>
+<td>
+对表结构要求高，查找效率高
+</td>
+<td>
+对表结构有一定要求，查找效率介于折半查找和顺序查找之间
+</td>
+</tr>
+<tr>
+<td>
+使用情况
+</td>
+<td>
+任何结构的线性表，不经常做插入和删除
+</td>
+<td>
+有序的顺序表，不经常做插入和删除
+</td>
+<td>
+块间有序、块内无序的顺序表，经常做插入和删除
+</td>
+</tr>
+</table>
+<p></escape></p>
+<h1 id="树表的查找">树表的查找</h1>
+<blockquote>
+<p>适用于动态查找表</p>
+</blockquote>
+<h2 id="二叉排序树二叉查找树">二叉排序树(二叉查找树)</h2>
+<p><strong>时间复杂度</strong></p>
+<ul>
+<li>创建树: <span class="math inline">\(O(nlog_2n)\)</span></li>
+<li>插入结点: <span class="math inline">\(O(log_2n)\)</span></li>
+<li>查找结点: <span class="math inline">\(O(log_2n)\)</span></li>
+<li>删除结点: <span class="math inline">\(O(log_2n)\)</span></li>
+</ul>
+<p>二叉排序树或者是一棵空树，或者是具有下列性质的二叉树: -
+若它的左子树不空，则左子树上所有结点的值均小于它的根结点的值 -
+若它的右子树不空，则右子树上所有结点的值均大于它的根结点的值 -
+它的左右子树也分别为二叉排序树</p>
+<p><em>故:
+中序遍历一颗二叉排序树可以得到一个结点值递增的有序序列</em></p>
+<h3 id="结构定义">结构定义</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="type">int</span> KeyType;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    KeyType key; <span class="comment">// 关键字域</span></span><br><span class="line">&#125;ElemType;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">BSTNode</span> &#123;</span></span><br><span class="line">    ElemType data; <span class="comment">// 每个结点的数据域包括关键字项和其他数据项</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">BSTNode</span> *<span class="title">lchild</span>, *<span class="title">rchild</span>;</span> <span class="comment">// 左右孩子指针</span></span><br><span class="line">&#125;BSTNode, *BSTree;</span><br></pre></td></tr></table></figure>
+<h3 id="二叉排序树的递归查找">二叉排序树的递归查找</h3>
+<p><strong>算法步骤</strong></p>
+<ul>
+<li>若二叉排序树为空，则查找失败，返回空指针</li>
+<li>若二叉排序树非空，将给定值与根结点的关键字t-&gt;data.key进行比较:
+<ul>
+<li>若key等于t-&gt;data.key，则查找成功，返回该结点地址</li>
+<li>若key小于t-&gt;data.key，则递归查找左子树</li>
+<li>若key大于t-&gt;data.key，则递归查找右子树</li>
+</ul></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">BSTree <span class="title function_">SearchBST</span><span class="params">(BSTree t, KeyType key)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (!t || key == t-&gt;data.key)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> t;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (key &lt; t-&gt;data.key)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> SearchBST(t-&gt;lchild, key);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> SearchBST(t-&gt;rchild, key);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="二叉排序树的插入">二叉排序树的插入</h3>
+<p><strong>算法步骤</strong></p>
+<ul>
+<li>若二叉排序树为空，则将插入结点*s作为根结点插入到空树中</li>
+<li>若二叉排序树非空，则将key与根结点的关键字t-&gt;data.key比较
+<ul>
+<li>若key小于t-&gt;data.key，则将*s插入左子树</li>
+<li>若key大于t-&gt;data.key，则将*s插入右子树</li>
+</ul></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line">BSTree <span class="title function_">InsertBST</span><span class="params">(BSTree t, KeyType key)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (!t)</span><br><span class="line">    &#123;</span><br><span class="line">        BSTree s= (BSTree)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(BSTNode));</span><br><span class="line">        ElemType data = &#123;key: key&#125;;</span><br><span class="line">        s-&gt;data = data;</span><br><span class="line">        s-&gt;lchild = s-&gt;rchild = <span class="literal">NULL</span>;</span><br><span class="line">        <span class="keyword">return</span> s;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (key &lt; t-&gt;data.key)</span><br><span class="line">    &#123;</span><br><span class="line">        t-&gt;lchild = InsertBST(t-&gt;lchild, key);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (key &gt; t-&gt;data.key)</span><br><span class="line">    &#123;</span><br><span class="line">        t-&gt;rchild = InsertBST(t-&gt;rchild, key);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> t;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="二叉排序树的创建">二叉排序树的创建</h3>
+<p><strong>算法步骤</strong></p>
+<ul>
+<li>将二叉排序树t初始化为空树</li>
+<li>读取一个关键字key的结点</li>
+<li>如果读取的关键字不是输入结束标志，则循环执行一下操作:
+<ul>
+<li>将此结点插入到二叉排序树t中</li>
+<li>读入下一个关键字</li>
+</ul></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">BSTree <span class="title function_">CreateBST</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    BSTree t = <span class="literal">NULL</span>;</span><br><span class="line">    KeyType e;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, e);</span><br><span class="line">    <span class="keyword">while</span>(e != <span class="number">65535</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        t = InsertBST(t, e);</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, e);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> t;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="二叉排序树的删除">二叉排序树的删除</h3>
+<p>首先从二叉排序树的根结点开始查找关键字为key的待删除结点，如果树中不存在此结点，则不做任何操作；否则，假设被删结点为<code>*p</code>，其双亲结点为<code>*f</code>，<span
+class="math inline">\(p_l\)</span>和<span
+class="math inline">\(p_r\)</span>分别表示其左子树和右子树。假设<code>*p</code>是<code>*f</code>的左孩子，可分下列情况讨论：</p>
+<ul>
+<li><p>若<code>*p</code>为叶子结点，则<span
+class="math inline">\(p_l\)</span>和<span
+class="math inline">\(p_r\)</span>均为空树。由于删除叶子结点不破坏整棵树的结构，则只需修改其双亲结点的指针即可。</p>
+<p><code>f-&gt;lchild=NULL;</code></p></li>
+<li><p>若<code>*p</code>结点只有左子树<span
+class="math inline">\(p_l\)</span>或只有右子树<span
+class="math inline">\(p_r\)</span>，此时只要令<span
+class="math inline">\(p_l\)</span>或<span
+class="math inline">\(p_r\)</span>成为其双亲结点<code>*f</code>的左子树即可。</p>
+<p><code>f-&gt;lchild = p-&gt;lchild; 或 f-&gt;lchild = p-&gt;rchild;</code></p></li>
+<li><p>若<code>*p</code>的左右子树均不为空。在删除<code>*p</code>之后，为保持其他元素之间的相对位置不变，有以下两种处理方法：</p>
+<ul>
+<li><p>令<code>*p</code>的左子树为<code>*f</code>的左子树，而<code>*p</code>的右子树为<code>*s</code>的右子树
+[<font style="color:red"><strong>可能增加树的深度</strong></font>]</p>
+<p><code>f-&gt;lchild = p-&gt;lchild; s-&gt;rchild = p-&gt;rchild</code></p></li>
+<li><p>令<code>*p</code>的直接前驱（或直接后继）替代<code>*p</code>，然后再从二叉排序树中删除它的直接前驱（或直接后继）。当以直接前驱<code>*s</code>替代<code>*p</code>时，由于<code>*s</code>只有左子树<span
+class="math inline">\(s_l\)</span>，则在删去<code>*s</code>之后，只要令<span
+class="math inline">\(s_l\)</span>为<code>*s</code>的双亲<code>*q</code>的右子树即可
+[<font style="color:red"><strong>以被删结点左子树中关键字最大的结点替代被删结点，然后从左子树中删除这个结点。此结点一定没有右子树（否则它就不是左子树中关键字最大的结点），这样不会增加树的高度</strong></font>]</p>
+<p><code>p-&gt;data=s-&gt;data; q-&gt;rchild=s-&gt;lchild;</code></p></li>
+</ul></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">BSTree <span class="title function_">DeleteBST</span><span class="params">(BSTree t, KeyType key)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 初始化</span></span><br><span class="line">    BSTree p = t;</span><br><span class="line">    BSTree q = <span class="literal">NULL</span>;</span><br><span class="line">    BSTree f = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="comment">// 从根结点查找关键字等于key的结点p</span></span><br><span class="line">    <span class="keyword">while</span> (p)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (p-&gt;data.key == key)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        f = p;</span><br><span class="line">        <span class="keyword">if</span> (p-&gt;data.key &gt; key)</span><br><span class="line">        &#123;</span><br><span class="line">            p = p-&gt;lchild;</span><br><span class="line">        &#125; <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            p = p-&gt;rchild;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="comment">// 树中不存在关键字为key的结点</span></span><br><span class="line">    <span class="keyword">if</span> (!p)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> t;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (p-&gt;lchild &amp;&amp; p-&gt;rchild)</span><br><span class="line">    &#123;</span><br><span class="line">        q = p;</span><br><span class="line">        BSTree s = p-&gt;lchild;</span><br><span class="line">        <span class="comment">// 在*p的左子树中继续查找其前驱结点，即最右下结点</span></span><br><span class="line">        <span class="keyword">while</span> (s-&gt;rchild)</span><br><span class="line">        &#123;</span><br><span class="line">            q = s;</span><br><span class="line">            s = s-&gt;rchild;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// s指向被删结点的&quot;前驱&quot;</span></span><br><span class="line">        p-&gt;data = s-&gt;data;</span><br><span class="line">        <span class="comment">// 重接*q的右子树</span></span><br><span class="line">        <span class="keyword">if</span> (q != p)</span><br><span class="line">        &#123;</span><br><span class="line">            q-&gt;rchild = s-&gt;lchild;</span><br><span class="line">        &#125;<span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// 重接*q的左子树</span></span><br><span class="line">            q-&gt;lchild = s-&gt;lchild;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">free</span>(s);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (!p-&gt;rchild)</span><br><span class="line">    &#123;</span><br><span class="line">        q = p;</span><br><span class="line">        p = p-&gt;lchild;</span><br><span class="line">    &#125; <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        q = p;</span><br><span class="line">        p = p-&gt;rchild;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 被删除结点为根结点</span></span><br><span class="line">    <span class="keyword">if</span> (!f)</span><br><span class="line">    &#123;</span><br><span class="line">        t = p;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (q == f-&gt;lchild) &#123;</span><br><span class="line">        <span class="comment">// 连接到*f的左子树位置</span></span><br><span class="line">        f-&gt;lchild = p;</span><br><span class="line">    &#125; <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 连接到*f的右子树位置</span></span><br><span class="line">        f-&gt;rchild = p;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">free</span>(p);</span><br><span class="line">    <span class="keyword">return</span> t;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="平衡二叉树">平衡二叉树</h2>
+<blockquote>
+<p>查找时间复杂度<span class="math inline">\(O(log_2n)\)</span></p>
+</blockquote>
+<p>平衡二叉树或者是空树，或者是具有如下性质的二叉排序树</p>
+<ul>
+<li>左子树和右子树的深度之差的绝对值小于1</li>
+<li>左子树和右子树也是平衡二叉树</li>
+</ul>
+<p><a
+href="/2024/09/26/数据结构/二叉查找树和平衡树/"><strong><font style="color: red">平衡树</font></strong></a></p>
+<escape>
+<table>
+<caption style="color: red">
+折半查找和二叉排序树查找的比较
+</caption>
+<tr>
+<th id="lineTd">
+<span style="float:left;margin-top: 20px">比较项目</span> <span
+style="right:left;margin-top: -10px">查找方法</span>
+</th>
+<th>
+折半查找
+</th>
+<th>
+二叉排序树的查找
+</th>
+</tr>
+<tr>
+<td>
+查找时间复杂度
+</td>
+<td>
+<span class="math inline">\(O(log_2n)\)</span>
+</td>
+<td>
+<span class="math inline">\(O(log_2n)\)</span>
+</td>
+</tr>
+<tr>
+<td>
+特点
+</td>
+<td>
+数据结构采用有序的顺序表，插入和删除操作需移动大量元素
+</td>
+<td>
+数据结构采用树的二叉链表表示，插入和删除操作无需移动元素，只需修改指针
+</td>
+</tr>
+<tr>
+<td>
+使用情况
+</td>
+<td>
+不经常做插入和删除的静态查找表
+</td>
+<td>
+经常做插入和删除的动态查找表
+</td>
+</tr>
+</table>
+<p></escape></p>
+<h2 id="b树">B树</h2>
+<p><a
+href="/2024/11/01/算法/B树/"><strong><font style="color: red">B树</font></strong></a></p>
+<h2 id="散列表">散列表</h2>
+<p><a
+href="/2024/11/03/算法/散列表/"><strong><font style="color: red">散列表</font></strong></a></p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2024/10/22/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/%E5%9B%BE/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <!-- <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2025-03-04 06:20:20
+            </span> -->
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E7%AE%97%E6%B3%95/" title="算法">
+                        #算法
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E6%9F%A5%E6%89%BE%E7%AE%97%E6%B3%95/" title="查找算法">
+                        #查找算法
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2024/10/25/%E7%AE%97%E6%B3%95/%E6%8E%92%E5%BA%8F/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E8%A1%A8%E7%9A%84%E6%9F%A5%E6%89%BE"><span class="toc-text">线性表的查找</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%BA%E5%BA%8F%E6%9F%A5%E6%89%BE"><span class="toc-text">顺序查找</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%98%E5%8D%8A%E6%9F%A5%E6%89%BE"><span class="toc-text">折半查找</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%9D%97%E6%9F%A5%E6%89%BE"><span class="toc-text">分块查找</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A0%91%E8%A1%A8%E7%9A%84%E6%9F%A5%E6%89%BE"><span class="toc-text">树表的查找</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E5%8F%89%E6%8E%92%E5%BA%8F%E6%A0%91%E4%BA%8C%E5%8F%89%E6%9F%A5%E6%89%BE%E6%A0%91"><span class="toc-text">二叉排序树(二叉查找树)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E6%9E%84%E5%AE%9A%E4%B9%89"><span class="toc-text">结构定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E5%8F%89%E6%8E%92%E5%BA%8F%E6%A0%91%E7%9A%84%E9%80%92%E5%BD%92%E6%9F%A5%E6%89%BE"><span class="toc-text">二叉排序树的递归查找</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E5%8F%89%E6%8E%92%E5%BA%8F%E6%A0%91%E7%9A%84%E6%8F%92%E5%85%A5"><span class="toc-text">二叉排序树的插入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E5%8F%89%E6%8E%92%E5%BA%8F%E6%A0%91%E7%9A%84%E5%88%9B%E5%BB%BA"><span class="toc-text">二叉排序树的创建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E5%8F%89%E6%8E%92%E5%BA%8F%E6%A0%91%E7%9A%84%E5%88%A0%E9%99%A4"><span class="toc-text">二叉排序树的删除</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B3%E8%A1%A1%E4%BA%8C%E5%8F%89%E6%A0%91"><span class="toc-text">平衡二叉树</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#b%E6%A0%91"><span class="toc-text">B树</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%A3%E5%88%97%E8%A1%A8"><span class="toc-text">散列表</span></a></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+    </ul>
+  </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + %E6%9F%A5%E6%89%BE + '&url=' + https%3A%2F%2Fericpuwang.github.io%2F2024%2F10%2F23%2F%25E7%25AE%2597%25E6%25B3%2595%2F%25E6%259F%25A5%25E6%2589%25BE%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://ericpuwang.github.io/2024/10/23/%E7%AE%97%E6%B3%95/%E6%9F%A5%E6%89%BE/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
