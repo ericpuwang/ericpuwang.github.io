@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="ericpuwang" />
+  <!-- Open Graph Description 简短摘要-->
+  
+  <!-- 用于搜索引擎的文章摘要 -->
+  
+  
+  
+  <title>
+    
+      K8s Iptables分析 
+      
+      
+      |
+    
+     Hexo
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.jpeg">
+    <link rel="icon" href="/images/favicon.jpeg">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/font.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  <script defer type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" rel="stylesheet">
+  <script defer type="text/javascript" src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.jpeg" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">ericpuwang</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">K8s Iptables分析</div>
+      <div class="post-attach">
+        <!-- <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2025-07-14 06:50:08
+        </span> -->
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/k8s/" title="k8s">
+                    #k8s
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/iptables/" title="iptables">
+                    #iptables
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="iptables">Iptables</h1>
+<blockquote>
+<p><strong>iptables</strong>
+通常就是指linux上的防火墙,主要分为netfilter和iptables两个组件。netfilter为内核空间的组件，iptables为用户空间的组件，提供添加，删除查询防火墙规则的功能。</p>
+</blockquote>
+<p><strong>k8s的service通过iptables来做后端pod的转发和路由</strong></p>
+<h2 id="环境准备">环境准备</h2>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">创建集群</span></span><br><span class="line">kind create cluster --name iptables --image kindest/node:v1.23.5</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">安装traefik</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">https://doc.traefik.io/traefik/getting-started/install-traefik/#use-the-helm-chart</span></span><br><span class="line">helm repo add traefik https://helm.traefik.io/traefik</span><br><span class="line">helm repo update</span><br><span class="line">helm install traefik traefik/traefik</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">集群就绪后的iptables规则</span></span><br><span class="line">root@iptables-control-plane:/# iptables-save</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Generated by iptables-save v1.8.4 on Wed Sep 28 06:24:53 2022</span></span><br><span class="line">*mangle</span><br><span class="line">:PREROUTING ACCEPT [1789547:356082101]</span><br><span class="line">:INPUT ACCEPT [1789547:356082101]</span><br><span class="line">:FORWARD ACCEPT [0:0]</span><br><span class="line">:OUTPUT ACCEPT [1784288:301003801]</span><br><span class="line">:POSTROUTING ACCEPT [1784288:301003801]</span><br><span class="line">:KUBE-KUBELET-CANARY - [0:0]</span><br><span class="line">:KUBE-PROXY-CANARY - [0:0]</span><br><span class="line">COMMIT</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Completed on Wed Sep 28 06:24:53 2022</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Generated by iptables-save v1.8.4 on Wed Sep 28 06:24:53 2022</span></span><br><span class="line">*filter</span><br><span class="line">:INPUT ACCEPT [1717:265397]</span><br><span class="line">:FORWARD ACCEPT [0:0]</span><br><span class="line">:OUTPUT ACCEPT [1722:288167]</span><br><span class="line">:KUBE-EXTERNAL-SERVICES - [0:0]</span><br><span class="line">:KUBE-FIREWALL - [0:0]</span><br><span class="line">:KUBE-FORWARD - [0:0]</span><br><span class="line">:KUBE-KUBELET-CANARY - [0:0]</span><br><span class="line">:KUBE-NODEPORTS - [0:0]</span><br><span class="line">:KUBE-PROXY-CANARY - [0:0]</span><br><span class="line">:KUBE-SERVICES - [0:0]</span><br><span class="line">-A INPUT -m comment --comment &quot;kubernetes health check service ports&quot; -j KUBE-NODEPORTS</span><br><span class="line">-A INPUT -m conntrack --ctstate NEW -m comment --comment &quot;kubernetes externally-visible service portals&quot; -j KUBE-EXTERNAL-SERVICES</span><br><span class="line">-A INPUT -j KUBE-FIREWALL</span><br><span class="line">-A FORWARD -m comment --comment &quot;kubernetes forwarding rules&quot; -j KUBE-FORWARD</span><br><span class="line">-A FORWARD -m conntrack --ctstate NEW -m comment --comment &quot;kubernetes service portals&quot; -j KUBE-SERVICES</span><br><span class="line">-A FORWARD -m conntrack --ctstate NEW -m comment --comment &quot;kubernetes externally-visible service portals&quot; -j KUBE-EXTERNAL-SERVICES</span><br><span class="line">-A OUTPUT -m conntrack --ctstate NEW -m comment --comment &quot;kubernetes service portals&quot; -j KUBE-SERVICES</span><br><span class="line">-A OUTPUT -j KUBE-FIREWALL</span><br><span class="line">-A KUBE-FIREWALL -m comment --comment &quot;kubernetes firewall for dropping marked packets&quot; -m mark --mark 0x8000/0x8000 -j DROP</span><br><span class="line">-A KUBE-FIREWALL ! -s 127.0.0.0/8 -d 127.0.0.0/8 -m comment --comment &quot;block incoming localnet connections&quot; -m conntrack ! --ctstate RELATED,ESTABLISHED,DNAT -j DROP</span><br><span class="line">-A KUBE-FORWARD -m conntrack --ctstate INVALID -j DROP</span><br><span class="line">-A KUBE-FORWARD -m comment --comment &quot;kubernetes forwarding rules&quot; -m mark --mark 0x4000/0x4000 -j ACCEPT</span><br><span class="line">-A KUBE-FORWARD -m comment --comment &quot;kubernetes forwarding conntrack rule&quot; -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT</span><br><span class="line">COMMIT</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Completed on Wed Sep 28 06:24:53 2022</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Generated by iptables-save v1.8.4 on Wed Sep 28 06:24:53 2022</span></span><br><span class="line">*nat</span><br><span class="line">:PREROUTING ACCEPT [1:60]</span><br><span class="line">:INPUT ACCEPT [1:60]</span><br><span class="line">:OUTPUT ACCEPT [26:1560]</span><br><span class="line">:POSTROUTING ACCEPT [26:1560]</span><br><span class="line">:DOCKER_OUTPUT - [0:0]</span><br><span class="line">:DOCKER_POSTROUTING - [0:0]</span><br><span class="line">:KIND-MASQ-AGENT - [0:0]</span><br><span class="line">:KUBE-KUBELET-CANARY - [0:0]</span><br><span class="line">:KUBE-MARK-DROP - [0:0]</span><br><span class="line">:KUBE-MARK-MASQ - [0:0]</span><br><span class="line">:KUBE-NODEPORTS - [0:0]</span><br><span class="line">:KUBE-POSTROUTING - [0:0]</span><br><span class="line">:KUBE-PROXY-CANARY - [0:0]</span><br><span class="line">:KUBE-SEP-242VRRB6CJESMF7F - [0:0]</span><br><span class="line">:KUBE-SEP-2KMBOYXVR33SDSC2 - [0:0]</span><br><span class="line">:KUBE-SEP-6E7XQMQ4RAYOWTTM - [0:0]</span><br><span class="line">:KUBE-SEP-OJCTP5LCEHQJ3D72 - [0:0]</span><br><span class="line">:KUBE-SEP-PUHFDAMRBZWCPADU - [0:0]</span><br><span class="line">:KUBE-SEP-SF3LG62VAE5ALYDV - [0:0]</span><br><span class="line">:KUBE-SEP-WXWGHGKZOCNYRYI7 - [0:0]</span><br><span class="line">:KUBE-SEP-ZP3FB6NMPNCO4VBJ - [0:0]</span><br><span class="line">:KUBE-SEP-ZXMNUKOKXUTL2MK2 - [0:0]</span><br><span class="line">:KUBE-SERVICES - [0:0]</span><br><span class="line">:KUBE-SVC-3CRYVFGPLWYNKULQ - [0:0]</span><br><span class="line">:KUBE-SVC-ERIFXISQEP7F7OF4 - [0:0]</span><br><span class="line">:KUBE-SVC-JD5MR3NA4I4DYORP - [0:0]</span><br><span class="line">:KUBE-SVC-NPX46M4PTMTKRN6Y - [0:0]</span><br><span class="line">:KUBE-SVC-QWNV66JT3UNCF3AW - [0:0]</span><br><span class="line">:KUBE-SVC-TCOU7JCQXEZGVUNU - [0:0]</span><br><span class="line">-A PREROUTING -m comment --comment &quot;kubernetes service portals&quot; -j KUBE-SERVICES</span><br><span class="line">-A PREROUTING -d 192.168.31.191/32 -j DOCKER_OUTPUT</span><br><span class="line">-A OUTPUT -m comment --comment &quot;kubernetes service portals&quot; -j KUBE-SERVICES</span><br><span class="line">-A OUTPUT -d 192.168.31.191/32 -j DOCKER_OUTPUT</span><br><span class="line">-A POSTROUTING -m comment --comment &quot;kubernetes postrouting rules&quot; -j KUBE-POSTROUTING</span><br><span class="line">-A POSTROUTING -d 192.168.31.191/32 -j DOCKER_POSTROUTING</span><br><span class="line">-A POSTROUTING -m addrtype ! --dst-type LOCAL -m comment --comment &quot;kind-masq-agent: ensure nat POSTROUTING directs all non-LOCAL destination traffic to our custom KIND-MASQ-AGENT chain&quot; -j KIND-MASQ-AGENT</span><br><span class="line">-A DOCKER_OUTPUT -d 192.168.31.191/32 -p tcp -m tcp --dport 53 -j DNAT --to-destination 127.0.0.11:42845</span><br><span class="line">-A DOCKER_OUTPUT -d 192.168.31.191/32 -p udp -m udp --dport 53 -j DNAT --to-destination 127.0.0.11:50410</span><br><span class="line">-A DOCKER_POSTROUTING -s 127.0.0.11/32 -p tcp -m tcp --sport 42845 -j SNAT --to-source 192.168.31.191:53</span><br><span class="line">-A DOCKER_POSTROUTING -s 127.0.0.11/32 -p udp -m udp --sport 50410 -j SNAT --to-source 192.168.31.191:53</span><br><span class="line">-A KIND-MASQ-AGENT -d 10.244.0.0/16 -m comment --comment &quot;kind-masq-agent: local traffic is not subject to MASQUERADE&quot; -j RETURN</span><br><span class="line">-A KIND-MASQ-AGENT -m comment --comment &quot;kind-masq-agent: outbound traffic is subject to MASQUERADE (must be last in chain)&quot; -j MASQUERADE</span><br><span class="line">-A KUBE-MARK-DROP -j MARK --set-xmark 0x8000/0x8000</span><br><span class="line">-A KUBE-MARK-MASQ -j MARK --set-xmark 0x4000/0x4000</span><br><span class="line">-A KUBE-POSTROUTING -m mark ! --mark 0x4000/0x4000 -j RETURN</span><br><span class="line">-A KUBE-POSTROUTING -j MARK --set-xmark 0x4000/0x0</span><br><span class="line">-A KUBE-POSTROUTING -m comment --comment &quot;kubernetes service traffic requiring SNAT&quot; -j MASQUERADE --random-fully</span><br><span class="line">-A KUBE-SEP-242VRRB6CJESMF7F -s 10.244.0.5/32 -m comment --comment &quot;default/traefik:web&quot; -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SEP-242VRRB6CJESMF7F -p tcp -m comment --comment &quot;default/traefik:web&quot; -m tcp -j DNAT --to-destination 10.244.0.5:8000</span><br><span class="line">-A KUBE-SEP-2KMBOYXVR33SDSC2 -s 10.244.0.5/32 -m comment --comment &quot;default/traefik:websecure&quot; -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SEP-2KMBOYXVR33SDSC2 -p tcp -m comment --comment &quot;default/traefik:websecure&quot; -m tcp -j DNAT --to-destination 10.244.0.5:8443</span><br><span class="line">-A KUBE-SEP-6E7XQMQ4RAYOWTTM -s 10.244.0.3/32 -m comment --comment &quot;kube-system/kube-dns:dns&quot; -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SEP-6E7XQMQ4RAYOWTTM -p udp -m comment --comment &quot;kube-system/kube-dns:dns&quot; -m udp -j DNAT --to-destination 10.244.0.3:53</span><br><span class="line">-A KUBE-SEP-OJCTP5LCEHQJ3D72 -s 172.18.0.5/32 -m comment --comment &quot;default/kubernetes:https&quot; -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SEP-OJCTP5LCEHQJ3D72 -p tcp -m comment --comment &quot;default/kubernetes:https&quot; -m tcp -j DNAT --to-destination 172.18.0.5:6443</span><br><span class="line">-A KUBE-SEP-PUHFDAMRBZWCPADU -s 10.244.0.4/32 -m comment --comment &quot;kube-system/kube-dns:metrics&quot; -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SEP-PUHFDAMRBZWCPADU -p tcp -m comment --comment &quot;kube-system/kube-dns:metrics&quot; -m tcp -j DNAT --to-destination 10.244.0.4:9153</span><br><span class="line">-A KUBE-SEP-SF3LG62VAE5ALYDV -s 10.244.0.4/32 -m comment --comment &quot;kube-system/kube-dns:dns-tcp&quot; -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SEP-SF3LG62VAE5ALYDV -p tcp -m comment --comment &quot;kube-system/kube-dns:dns-tcp&quot; -m tcp -j DNAT --to-destination 10.244.0.4:53</span><br><span class="line">-A KUBE-SEP-WXWGHGKZOCNYRYI7 -s 10.244.0.4/32 -m comment --comment &quot;kube-system/kube-dns:dns&quot; -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SEP-WXWGHGKZOCNYRYI7 -p udp -m comment --comment &quot;kube-system/kube-dns:dns&quot; -m udp -j DNAT --to-destination 10.244.0.4:53</span><br><span class="line">-A KUBE-SEP-ZP3FB6NMPNCO4VBJ -s 10.244.0.3/32 -m comment --comment &quot;kube-system/kube-dns:metrics&quot; -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SEP-ZP3FB6NMPNCO4VBJ -p tcp -m comment --comment &quot;kube-system/kube-dns:metrics&quot; -m tcp -j DNAT --to-destination 10.244.0.3:9153</span><br><span class="line">-A KUBE-SEP-ZXMNUKOKXUTL2MK2 -s 10.244.0.3/32 -m comment --comment &quot;kube-system/kube-dns:dns-tcp&quot; -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SEP-ZXMNUKOKXUTL2MK2 -p tcp -m comment --comment &quot;kube-system/kube-dns:dns-tcp&quot; -m tcp -j DNAT --to-destination 10.244.0.3:53</span><br><span class="line">-A KUBE-SERVICES -d 10.96.237.231/32 -p tcp -m comment --comment &quot;default/traefik:web cluster IP&quot; -m tcp --dport 80 -j KUBE-SVC-3CRYVFGPLWYNKULQ</span><br><span class="line">-A KUBE-SERVICES -d 10.96.237.231/32 -p tcp -m comment --comment &quot;default/traefik:websecure cluster IP&quot; -m tcp --dport 443 -j KUBE-SVC-QWNV66JT3UNCF3AW</span><br><span class="line">-A KUBE-SERVICES -d 10.96.0.1/32 -p tcp -m comment --comment &quot;default/kubernetes:https cluster IP&quot; -m tcp --dport 443 -j KUBE-SVC-NPX46M4PTMTKRN6Y</span><br><span class="line">-A KUBE-SERVICES -d 10.96.0.10/32 -p udp -m comment --comment &quot;kube-system/kube-dns:dns cluster IP&quot; -m udp --dport 53 -j KUBE-SVC-TCOU7JCQXEZGVUNU</span><br><span class="line">-A KUBE-SERVICES -d 10.96.0.10/32 -p tcp -m comment --comment &quot;kube-system/kube-dns:dns-tcp cluster IP&quot; -m tcp --dport 53 -j KUBE-SVC-ERIFXISQEP7F7OF4</span><br><span class="line">-A KUBE-SERVICES -d 10.96.0.10/32 -p tcp -m comment --comment &quot;kube-system/kube-dns:metrics cluster IP&quot; -m tcp --dport 9153 -j KUBE-SVC-JD5MR3NA4I4DYORP</span><br><span class="line">-A KUBE-SERVICES -m comment --comment &quot;kubernetes service nodeports; NOTE: this must be the last rule in this chain&quot; -m addrtype --dst-type LOCAL -j KUBE-NODEPORTS</span><br><span class="line">-A KUBE-SVC-3CRYVFGPLWYNKULQ ! -s 10.244.0.0/16 -d 10.96.237.231/32 -p tcp -m comment --comment &quot;default/traefik:web cluster IP&quot; -m tcp --dport 80 -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SVC-3CRYVFGPLWYNKULQ -m comment --comment &quot;default/traefik:web&quot; -j KUBE-SEP-242VRRB6CJESMF7F</span><br><span class="line">-A KUBE-SVC-ERIFXISQEP7F7OF4 ! -s 10.244.0.0/16 -d 10.96.0.10/32 -p tcp -m comment --comment &quot;kube-system/kube-dns:dns-tcp cluster IP&quot; -m tcp --dport 53 -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SVC-ERIFXISQEP7F7OF4 -m comment --comment &quot;kube-system/kube-dns:dns-tcp&quot; -m statistic --mode random --probability 0.50000000000 -j KUBE-SEP-ZXMNUKOKXUTL2MK2</span><br><span class="line">-A KUBE-SVC-ERIFXISQEP7F7OF4 -m comment --comment &quot;kube-system/kube-dns:dns-tcp&quot; -j KUBE-SEP-SF3LG62VAE5ALYDV</span><br><span class="line">-A KUBE-SVC-JD5MR3NA4I4DYORP ! -s 10.244.0.0/16 -d 10.96.0.10/32 -p tcp -m comment --comment &quot;kube-system/kube-dns:metrics cluster IP&quot; -m tcp --dport 9153 -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SVC-JD5MR3NA4I4DYORP -m comment --comment &quot;kube-system/kube-dns:metrics&quot; -m statistic --mode random --probability 0.50000000000 -j KUBE-SEP-ZP3FB6NMPNCO4VBJ</span><br><span class="line">-A KUBE-SVC-JD5MR3NA4I4DYORP -m comment --comment &quot;kube-system/kube-dns:metrics&quot; -j KUBE-SEP-PUHFDAMRBZWCPADU</span><br><span class="line">-A KUBE-SVC-NPX46M4PTMTKRN6Y ! -s 10.244.0.0/16 -d 10.96.0.1/32 -p tcp -m comment --comment &quot;default/kubernetes:https cluster IP&quot; -m tcp --dport 443 -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SVC-NPX46M4PTMTKRN6Y -m comment --comment &quot;default/kubernetes:https&quot; -j KUBE-SEP-OJCTP5LCEHQJ3D72</span><br><span class="line">-A KUBE-SVC-QWNV66JT3UNCF3AW ! -s 10.244.0.0/16 -d 10.96.237.231/32 -p tcp -m comment --comment &quot;default/traefik:websecure cluster IP&quot; -m tcp --dport 443 -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SVC-QWNV66JT3UNCF3AW -m comment --comment &quot;default/traefik:websecure&quot; -j KUBE-SEP-2KMBOYXVR33SDSC2</span><br><span class="line">-A KUBE-SVC-TCOU7JCQXEZGVUNU ! -s 10.244.0.0/16 -d 10.96.0.10/32 -p udp -m comment --comment &quot;kube-system/kube-dns:dns cluster IP&quot; -m udp --dport 53 -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SVC-TCOU7JCQXEZGVUNU -m comment --comment &quot;kube-system/kube-dns:dns&quot; -m statistic --mode random --probability 0.50000000000 -j KUBE-SEP-6E7XQMQ4RAYOWTTM</span><br><span class="line">-A KUBE-SVC-TCOU7JCQXEZGVUNU -m comment --comment &quot;kube-system/kube-dns:dns&quot; -j KUBE-SEP-WXWGHGKZOCNYRYI7</span><br><span class="line">COMMIT</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Completed on Wed Sep 28 06:24:53 2022</span></span><br></pre></td></tr></table></figure>
+<h2 id="service">service</h2>
+<p>有如下的映射关系</p>
+<table>
+<thead>
+<tr class="header">
+<th>clusterIp:port</th>
+<th>podIp:port</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>10.96.237.231:80</td>
+<td>10.244.0.5:8000</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">kubectl describe svc traefik</span></span><br><span class="line">Name:              traefik</span><br><span class="line">Namespace:         default</span><br><span class="line">Labels:            app.kubernetes.io/instance=traefik</span><br><span class="line">                   app.kubernetes.io/managed-by=Helm</span><br><span class="line">                   app.kubernetes.io/name=traefik</span><br><span class="line">                   helm.sh/chart=traefik-10.25.0</span><br><span class="line">Annotations:       meta.helm.sh/release-name: traefik</span><br><span class="line">                   meta.helm.sh/release-namespace: default</span><br><span class="line">Selector:          app.kubernetes.io/instance=traefik,app.kubernetes.io/name=traefik</span><br><span class="line">Type:              ClusterIP</span><br><span class="line">IP Family Policy:  SingleStack</span><br><span class="line">IP Families:       IPv4</span><br><span class="line">IP:                10.96.237.231</span><br><span class="line">IPs:               10.96.237.231</span><br><span class="line">Port:              web  80/TCP</span><br><span class="line">TargetPort:        web/TCP</span><br><span class="line">Endpoints:         10.244.0.5:8000</span><br><span class="line">Port:              websecure  443/TCP</span><br><span class="line">TargetPort:        websecure/TCP</span><br><span class="line">Endpoints:         10.244.0.5:8443</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">kubectl get svc traefik -owide</span></span><br><span class="line">NAME      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE     SELECTOR</span><br><span class="line">traefik   ClusterIP   10.96.237.231   &lt;none&gt;        80/TCP,443/TCP   3m25s   app.kubernetes.io/instance=traefik,app.kubernetes.io/name=traefik</span><br></pre></td></tr></table></figure>
+<h2 id="iptables-1">iptables</h2>
+<h3 id="入网流量">入网流量</h3>
+<p><strong><em>1. nat表</em></strong></p>
+<p><code>PREROUTING</code> -&gt; <code>KUBE-SERVICES</code> -&gt;
+<code>KUBE-SVC-3CRYVFGPLWYNKULQ</code> -&gt;
+<code>KUBE-SEP-242VRRB6CJESMF7F</code> -&gt; <code>DNAT</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">PREROUTING</span></span><br><span class="line">Chain PREROUTING (policy ACCEPT 13 packets, 780 bytes)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">   98  6678 KUBE-SERVICES  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* kubernetes service portals */</span><br><span class="line">    6   490 DOCKER_OUTPUT  all  --  *      *       0.0.0.0/0            192.168.31.191</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">KUBE-SERVICES</span></span><br><span class="line">Chain KUBE-SERVICES (2 references)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">    0     0 KUBE-SVC-3CRYVFGPLWYNKULQ  tcp  --  *      *       0.0.0.0/0            10.96.237.231        /* default/traefik:web cluster IP */ tcp dpt:80</span><br><span class="line">    0     0 KUBE-SVC-QWNV66JT3UNCF3AW  tcp  --  *      *       0.0.0.0/0            10.96.237.231        /* default/traefik:websecure cluster IP */ tcp dpt:443</span><br><span class="line">    0     0 KUBE-SVC-NPX46M4PTMTKRN6Y  tcp  --  *      *       0.0.0.0/0            10.96.0.1            /* default/kubernetes:https cluster IP */ tcp dpt:443</span><br><span class="line">   24  2108 KUBE-SVC-TCOU7JCQXEZGVUNU  udp  --  *      *       0.0.0.0/0            10.96.0.10           /* kube-system/kube-dns:dns cluster IP */ udp dpt:53</span><br><span class="line">    0     0 KUBE-SVC-ERIFXISQEP7F7OF4  tcp  --  *      *       0.0.0.0/0            10.96.0.10           /* kube-system/kube-dns:dns-tcp cluster IP */ tcp dpt:53</span><br><span class="line">    0     0 KUBE-SVC-JD5MR3NA4I4DYORP  tcp  --  *      *       0.0.0.0/0            10.96.0.10           /* kube-system/kube-dns:metrics cluster IP */ tcp dpt:9153</span><br><span class="line"> 1233 73980 KUBE-NODEPORTS  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* kubernetes service nodeports; NOTE: this must be the last rule in this chain */ ADDRTYPE match dst-type LOCAL</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">KUBE-SVC-3CRYVFGPLWYNKULQ</span></span><br><span class="line">Chain KUBE-SVC-3CRYVFGPLWYNKULQ (1 references)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">    0     0 KUBE-MARK-MASQ  tcp  --  *      *      !10.244.0.0/16        10.96.237.231        /* default/traefik:web cluster IP */ tcp dpt:80</span><br><span class="line">    0     0 KUBE-SEP-242VRRB6CJESMF7F  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* default/traefik:web */</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">KUBE-SEP-242VRRB6CJESMF7F</span></span><br><span class="line">Chain KUBE-SEP-242VRRB6CJESMF7F (1 references)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">    0     0 KUBE-MARK-MASQ  all  --  *      *       10.244.0.5           0.0.0.0/0            /* default/traefik:web */</span><br><span class="line">    0     0 DNAT       tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            /* default/traefik:web */ tcp to:10.244.0.5:8000</span><br></pre></td></tr></table></figure>
+<p><strong><em>2. filter表</em></strong></p>
+<p><code>INPUT</code> -&gt; <code>KUBE-NODEPORTS</code> -&gt;
+<code>KUBE-EXTERNAL-SERVICES</code> -&gt; <code>KUBE-FIREWALL</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">INPUT</span></span><br><span class="line">Chain INPUT (policy ACCEPT 166K packets, 27M bytes)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">1954K  383M KUBE-NODEPORTS  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* kubernetes health check service ports */</span><br><span class="line">17707 1063K KUBE-EXTERNAL-SERVICES  all  --  *      *       0.0.0.0/0            0.0.0.0/0            ctstate NEW /* kubernetes externally-visible service portals */</span><br><span class="line">1975K  389M KUBE-FIREWALL  all  --  *      *       0.0.0.0/0            0.0.0.0/0</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">KUBE-NODEPORTS</span></span><br><span class="line">Chain KUBE-NODEPORTS (1 references)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">KUBE-EXTERNAL-SERVICES</span></span><br><span class="line">Chain KUBE-EXTERNAL-SERVICES (2 references)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">KUBE-FIREWALL</span></span><br><span class="line">Chain KUBE-FIREWALL (2 references)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">    0     0 DROP       all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* kubernetes firewall for dropping marked packets */ mark match 0x8000/0x8000</span><br><span class="line">    0     0 DROP       all  --  *      *      !127.0.0.0/8          127.0.0.0/8          /* block incoming localnet connections */ ! ctstate RELATED,ESTABLISHED,DNAT</span><br></pre></td></tr></table></figure>
+<h3 id="出网流量">出网流量</h3>
+<p><strong><em>1. nat表</em></strong></p>
+<p><code>OUTPUT</code> -&gt; <code>KUBE-SERVICES</code></p>
+<blockquote>
+<p><strong><font color="red">ps</font></strong>:
+出网流量不会命中<code>KUBE-SERVICES</code>链中的规则</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">OUTPUT</span></span><br><span class="line">Chain OUTPUT (policy ACCEPT 3020 packets, 181K bytes)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">23756 1426K KUBE-SERVICES  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* kubernetes service portals */</span><br><span class="line">   48  3294 DOCKER_OUTPUT  all  --  *      *       0.0.0.0/0            192.168.31.191</span><br></pre></td></tr></table></figure>
+<p><strong><em>2. filter表</em></strong></p>
+<p><code>OUTPUT</code> -&gt; <code>KUBE-SERVICES</code> -&gt;
+<code>KUBE-FIREWALL</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">OUTPUT</span></span><br><span class="line">Chain OUTPUT (policy ACCEPT 166K packets, 28M bytes)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">22875 1373K KUBE-SERVICES  all  --  *      *       0.0.0.0/0            0.0.0.0/0            ctstate NEW /* kubernetes service portals */</span><br><span class="line">1970K  335M KUBE-FIREWALL  all  --  *      *       0.0.0.0/0            0.0.0.0/0</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">KUBE-SERVICES</span></span><br><span class="line">Chain KUBE-SERVICES (2 references)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">KUBE-FIREWALL</span></span><br><span class="line">Chain KUBE-FIREWALL (2 references)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">    0     0 DROP       all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* kubernetes firewall for dropping marked packets */ mark match 0x8000/0x8000</span><br><span class="line">    0     0 DROP       all  --  *      *      !127.0.0.0/8          127.0.0.0/8          /* block incoming localnet connections */ ! ctstate RELATED,ESTABLISHED,DNAT</span><br></pre></td></tr></table></figure>
+<p><strong><em>3. nat表</em></strong></p>
+<p><code>POSTROUTING</code> -&gt; <code>KUBE-POSTROUTING</code> -&gt;
+<code>MASQUERADE</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">POSTROUTING</span></span><br><span class="line">Chain POSTROUTING (policy ACCEPT 3038 packets, 183K bytes)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">23934 1438K KUBE-POSTROUTING  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* kubernetes postrouting rules */</span><br><span class="line">    0     0 DOCKER_POSTROUTING  all  --  *      *       0.0.0.0/0            192.168.31.191</span><br><span class="line"> 5518  332K KIND-MASQ-AGENT  all  --  *      *       0.0.0.0/0            0.0.0.0/0            ADDRTYPE match dst-type !LOCAL /* kind-masq-agent: ensure nat POSTROUTING directs all non-LOCAL destination traffic to our custom KIND-MASQ-AGENT chain */</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">KUBE-POSTROUTING</span></span><br><span class="line">Chain KUBE-POSTROUTING (1 references)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line"> 3050  184K RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0            mark match ! 0x4000/0x4000</span><br><span class="line">    0     0 MARK       all  --  *      *       0.0.0.0/0            0.0.0.0/0            MARK xor 0x4000</span><br><span class="line">    0     0 MASQUERADE  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* kubernetes service traffic requiring SNAT */ random-fully</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">DOCKER_POSTROUTING</span></span><br><span class="line">Chain DOCKER_POSTROUTING (1 references)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">    0     0 SNAT       tcp  --  *      *       127.0.0.11           0.0.0.0/0            tcp spt:42845 to:192.168.31.191:53</span><br><span class="line">    0     0 SNAT       udp  --  *      *       127.0.0.11           0.0.0.0/0            udp spt:50410 to:192.168.31.191:53</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">KIND-MASQ-AGENT</span></span><br><span class="line">Chain KIND-MASQ-AGENT (1 references)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line"> 5422  326K RETURN     all  --  *      *       0.0.0.0/0            10.244.0.0/16        /* kind-masq-agent: local traffic is not subject to MASQUERADE */</span><br><span class="line">   96  6326 MASQUERADE  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* kind-masq-agent: outbound traffic is subject to MASQUERADE (must be last in chain) */</span><br></pre></td></tr></table></figure>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2024/11/06/k8s/ipvs/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <!-- <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2025-07-14 06:50:08
+            </span> -->
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/k8s/" title="k8s">
+                        #k8s
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/iptables/" title="iptables">
+                        #iptables
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2024/11/06/Go%20Redis%E4%BD%BF%E7%94%A8%E5%8F%AF%E9%87%8D%E5%85%A5%E9%94%81%E6%94%AF%E6%8C%81%E9%80%89%E4%B8%BB/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#iptables"><span class="toc-text">Iptables</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="toc-text">环境准备</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#service"><span class="toc-text">service</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#iptables-1"><span class="toc-text">iptables</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%A5%E7%BD%91%E6%B5%81%E9%87%8F"><span class="toc-text">入网流量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BA%E7%BD%91%E6%B5%81%E9%87%8F"><span class="toc-text">出网流量</span></a></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+    </ul>
+  </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + K8s%20Iptables%E5%88%86%E6%9E%90 + '&url=' + https%3A%2F%2Fericpuwang.github.io%2F2024%2F11%2F06%2Fk8s%2Fiptables%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://ericpuwang.github.io/2024/11/06/k8s/iptables/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

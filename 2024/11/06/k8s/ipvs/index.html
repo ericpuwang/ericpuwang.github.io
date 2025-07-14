@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="ericpuwang" />
+  <!-- Open Graph Description 简短摘要-->
+  
+  <!-- 用于搜索引擎的文章摘要 -->
+  
+  
+  
+  <title>
+    
+      K8s IPVS工作原理 
+      
+      
+      |
+    
+     Hexo
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.jpeg">
+    <link rel="icon" href="/images/favicon.jpeg">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/font.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  <script defer type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" rel="stylesheet">
+  <script defer type="text/javascript" src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.jpeg" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">ericpuwang</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">K8s IPVS工作原理</div>
+      <div class="post-attach">
+        <!-- <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2025-07-14 06:50:08
+        </span> -->
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/k8s/" title="k8s">
+                    #k8s
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/ipvs/" title="ipvs">
+                    #ipvs
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="ipvs">IPVS</h1>
+<blockquote>
+<p>IPVS
+专门用于负载均衡，并使用更高效的数据结构（哈希表），允许几乎无限的规模扩张。</p>
+</blockquote>
+<p><strong>Ipvs和Iptables区别</strong></p>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 50%" />
+<col style="width: 6%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Netfilter Hook</th>
+<th>作用</th>
+<th>Iptables</th>
+<th>Ipvs</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>NF_IP_PRE_ROUTING</code></td>
+<td>接收的数据包进入协议栈后立即触发此回调函数。<strong>发生在路由判断之前</strong></td>
+<td>✓</td>
+<td><strong><code>✕</code></strong></td>
+</tr>
+<tr class="even">
+<td><code>NF_IP_LOCAL_IN</code></td>
+<td>接收的数据包经过路由判断后，如果目标地址在本机上，则将触发此回调函数</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td><code>NF_IP_FORWARD</code></td>
+<td>接收的数据包经过路由判断后，如果目标地址在其他机器上，则将触发此回调函数</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr class="even">
+<td><code>NF_IP_LOCAL_OUT</code></td>
+<td>本机产生的准备发送的数据包，在进入协议栈后立即触发此回调函数</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr class="odd">
+<td><code>NF_IP_POST_ROUTING</code></td>
+<td>本机产生的准备发送的数据包或者经由本机转发的数据包，在经过路由判断之后，将触发此回调函数。</td>
+<td>✓</td>
+<td><strong><code>✕</code></strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>服务网络拓扑</strong></p>
+<p>创建 ClusterIP 类型服务时，IPVS proxier 将执行以下三项操作：</p>
+<ul>
+<li>确保节点存在虚拟接口，默认是<code>kube-ipvs0</code></li>
+<li>将ClusterIP绑定到虚拟接口</li>
+<li>分别为每个ClusterIP地址创建IPVS虚拟服务器</li>
+</ul>
+<p><strong>端口映射</strong></p>
+<p>IPVS中有三种代理模式:
+<code>NAT</code>、<code>IPIP</code>和<code>DR</code>。目前只有<code>NAT</code>模式支持端口映射。<code>kube-proxy</code>利用NAT模式实现端口映射</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">ipvsadm -<span class="built_in">ln</span></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"> IPVS 服务端口443到Pod端口5443的映射</span></span><br><span class="line">TCP  10.96.176.171:443 rr</span><br><span class="line"><span class="meta prompt_">  -&gt; </span><span class="language-bash">10.244.110.164:5443          Masq    1      1          0</span></span><br><span class="line"><span class="meta prompt_">  -&gt; </span><span class="language-bash">10.244.162.180:5443          Masq    1      3          0</span></span><br></pre></td></tr></table></figure>
+<p><strong>会话关系</strong></p>
+<p>IPVS 支持客户端IP会话关联（持久连接）。 当服务指定会话关系时，IPVS
+代理将在 IPVS 虚拟服务器中设置超时值（默认为180分钟=
+<code>10800秒</code>）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">kubectl describe svc nginx</span></span><br><span class="line">Name:			nginx</span><br><span class="line">...</span><br><span class="line">IP:			    10.102.128.4</span><br><span class="line">Port:			http	3080/TCP</span><br><span class="line">Session Affinity:	ClientIP  # 会话保持</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">ipvsadm -<span class="built_in">ln</span></span></span><br><span class="line">IP Virtual Server version 1.2.1 (size=4096)</span><br><span class="line">Prot LocalAddress:Port Scheduler Flags</span><br><span class="line"><span class="meta prompt_">  -&gt; </span><span class="language-bash">RemoteAddress:Port           Forward Weight ActiveConn InActConn</span></span><br><span class="line">TCP  10.96.176.175:80 rr persistent 10800</span><br></pre></td></tr></table></figure>
+<p><strong>Iptables和Ipset</strong></p>
+<p><code>ipvs</code> 会使用 <code>iptables</code>
+进行<strong><code>包过滤</code></strong>、<strong><code>SNAT</code></strong>、<strong><code>masquared(伪装)</code></strong>，并使用<code>ipset</code>来简化<code>iptables</code>的规则管理</p>
+<p>kube-proxy
+<code>ipvs</code>模式在如下情况中依赖<code>iptables</code>实现:</p>
+<ul>
+<li>kube-proxy配置参数<code>--masquerade-all = true</code></li>
+<li>kube-proxy启动时指定集群CIDR</li>
+<li>支持<code>Loadbalancer</code>和<code>NodePort</code>类型的Service</li>
+</ul>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 40%" />
+<col style="width: 40%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>名称</th>
+<th>条目</th>
+<th>使用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>KUBE-CLUSTER-IP</td>
+<td>All service IP + port</td>
+<td>Mark-Masq for cases that
+<font color="red"><code>masquerade-all=true</code></font> or
+<font color="red"><code>clusterCIDR</code></font> specified</td>
+</tr>
+<tr class="even">
+<td>KUBE-LOOP-BACK</td>
+<td>All service IP + port + IP</td>
+<td>masquerade for solving hairpin purpose</td>
+</tr>
+<tr class="odd">
+<td>KUBE-EXTERNAL-IP</td>
+<td>service external IP + port</td>
+<td>masquerade for packages to external IPs</td>
+</tr>
+<tr class="even">
+<td>KUBE-LOAD-BALANCER</td>
+<td>load balancer ingress IP + port</td>
+<td>masquerade for packages to load balancer type service</td>
+</tr>
+<tr class="odd">
+<td>KUBE-LOAD-BALANCER-LOCAL</td>
+<td>LB ingress IP + port with
+<font color="red"><code>externalTrafficPolicy=local</code></font></td>
+<td>accept packages to load balancer with
+<font color="red"><code>externalTrafficPolicy=local</code></font></td>
+</tr>
+<tr class="even">
+<td>KUBE-LOAD-BALANCER-FW</td>
+<td>load balancer ingress IP + port with
+<font color="red"><code>loadBalancerSourceRanges</code></font></td>
+<td>package filter for load balancer with
+<font color="red"><code>loadBalancerSourceRanges</code></font>
+specified</td>
+</tr>
+<tr class="odd">
+<td>KUBE-LOAD-BALANCER-SOURCE-CIDR</td>
+<td>load balancer ingress IP + port + source CIDR</td>
+<td>package filter for load balancer with
+<font color="red"><code>loadBalancerSourceRanges</code></font>
+specified</td>
+</tr>
+<tr class="even">
+<td>KUBE-NODE-PORT-TCP</td>
+<td>nodeport type service TCP port</td>
+<td>masquerade for packets to nodePort(TCP)</td>
+</tr>
+<tr class="odd">
+<td>KUBE-NODE-PORT-LOCAL-TCP</td>
+<td>nodeport type service TCP port with
+<font color="red"><code>externalTrafficPolicy=local</code></font></td>
+<td>accept packages to nodeport service with
+<font color="red"><code>externalTrafficPolicy=local</code></font></td>
+</tr>
+<tr class="even">
+<td>KUBE-NODE-PORT-UDP</td>
+<td>nodeport type service UDP port</td>
+<td>masquerade for packets to nodePort(UDP)</td>
+</tr>
+<tr class="odd">
+<td>KUBE-NODE-PORT-LOCAL-UDP</td>
+<td>nodeport type service UDP port with
+<font color="red"><code>externalTrafficPolicy=local</code></font></td>
+<td>accept packages to nodeport service with
+<font color="red"><code>externalTrafficPolicy=local</code></font></td>
+</tr>
+</tbody>
+</table>
+<h1 id="入网流量">入网流量</h1>
+<ol type="1">
+<li><p><strong>nat表</strong></p>
+<p><code>PREROUTING</code> -&gt; <code>KUBE-SERVICES</code> -&gt;
+<code>KUBE-MARK-MASQ</code> -&gt; <code>ACCEPT</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Chain PREROUTING (policy ACCEPT 0 packets, 0 bytes)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">    7   491 KUBE-SERVICES  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* kubernetes service portals */</span><br><span class="line">    2   191 DOCKER_OUTPUT  all  --  *      *       0.0.0.0/0            172.18.0.1</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Chain KUBE-SERVICES (2 references)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">    0     0 KUBE-MARK-MASQ  all  --  *      *      !10.244.0.0/16        0.0.0.0/0            /* Kubernetes service cluster ip + port for masquerade purpose */ match-set KUBE-CLUSTER-IP dst,dst</span><br><span class="line">   20  1200 KUBE-NODE-PORT  all  --  *      *       0.0.0.0/0            0.0.0.0/0            ADDRTYPE match dst-type LOCAL</span><br><span class="line">    0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            match-set KUBE-CLUSTER-IP dst,dst</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Chain KUBE-MARK-MASQ (2 references)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">    0     0 MARK       all  --  *      *       0.0.0.0/0            0.0.0.0/0            MARK or 0x4000</span><br></pre></td></tr></table></figure></li>
+<li><p><strong>filter表</strong></p>
+<p><code>INPUT</code> -&gt; <code>KUBE-NODE-PORT</code> -&gt;
+<code>KUBE-FIREWALL</code> -&gt; <code>IPVS[kube-ipvs0]</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Chain INPUT (policy ACCEPT 1021 packets, 145K bytes)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">2761K  402M KUBE-NODE-PORT  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* kubernetes health check rules */</span><br><span class="line">2768K  404M KUBE-FIREWALL  all  --  *      *       0.0.0.0/0            0.0.0.0/0</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Chain KUBE-NODE-PORT (1 references)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">    0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* Kubernetes health check node port */ match-set KUBE-HEALTH-CHECK-NODE-PORT dst</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Chain KUBE-FIREWALL (2 references)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line">    0     0 DROP       all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* kubernetes firewall for dropping marked packets */ mark match 0x8000/0x8000</span><br><span class="line">    0     0 DROP       all  --  *      *      !127.0.0.0/8          127.0.0.0/8          /* block incoming localnet connections */ ! ctstate RELATED,ESTABLISHED,DNAT</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">root@ipvs-control-plane:/# ip addr show dev kube-ipvs0</span><br><span class="line">7: kube-ipvs0: &lt;BROADCAST,NOARP&gt; mtu 1500 qdisc noop state DOWN group default</span><br><span class="line">    link/ether 82:b2:e2:12:d9:77 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 10.96.0.1/32 scope global kube-ipvs0</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet 10.96.0.10/32 scope global kube-ipvs0</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">root@ipvs-control-plane:/# ipset list</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">Name: KUBE-LOOP-BACK</span><br><span class="line">Type: hash:ip,port,ip</span><br><span class="line">Revision: 5</span><br><span class="line">Header: family inet hashsize 1024 maxelem 65536</span><br><span class="line">Size in memory: 680</span><br><span class="line">References: 1</span><br><span class="line">Number of entries: 6</span><br><span class="line">Members:</span><br><span class="line">10.244.0.2,tcp:9153,10.244.0.2</span><br><span class="line">10.244.0.2,udp:53,10.244.0.2</span><br><span class="line">10.244.0.4,tcp:9153,10.244.0.4</span><br><span class="line">10.244.0.4,udp:53,10.244.0.4</span><br><span class="line">10.244.0.4,tcp:53,10.244.0.4</span><br><span class="line">10.244.0.2,tcp:53,10.244.0.2</span><br><span class="line"></span><br><span class="line">Name: KUBE-LOAD-BALANCER</span><br><span class="line">Type: hash:ip,port</span><br><span class="line">Revision: 5</span><br><span class="line">Header: family inet hashsize 1024 maxelem 65536</span><br><span class="line">Size in memory: 192</span><br><span class="line">References: 0</span><br><span class="line">Number of entries: 0</span><br><span class="line">Members:</span><br><span class="line"></span><br><span class="line">Name: KUBE-NODE-PORT-LOCAL-SCTP-HASH</span><br><span class="line">Type: hash:ip,port</span><br><span class="line">Revision: 5</span><br><span class="line">Header: family inet hashsize 1024 maxelem 65536</span><br><span class="line">Size in memory: 192</span><br><span class="line">References: 0</span><br><span class="line">Number of entries: 0</span><br><span class="line">Members:</span><br><span class="line"></span><br><span class="line">Name: KUBE-CLUSTER-IP</span><br><span class="line">Type: hash:ip,port</span><br><span class="line">Revision: 5</span><br><span class="line">Header: family inet hashsize 1024 maxelem 65536</span><br><span class="line">Size in memory: 448</span><br><span class="line">References: 2</span><br><span class="line">Number of entries: 4</span><br><span class="line">Members:</span><br><span class="line">10.96.0.1,tcp:443</span><br><span class="line">10.96.0.10,tcp:53</span><br><span class="line">10.96.0.10,udp:53</span><br><span class="line">10.96.0.10,tcp:9153</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">root@ipvs-control-plane:/# ipvsadm -ln</span><br><span class="line">IP Virtual Server version 1.2.1 (size=4096)</span><br><span class="line">Prot LocalAddress:Port Scheduler Flags</span><br><span class="line"><span class="meta prompt_">  -&gt; </span><span class="language-bash">RemoteAddress:Port           Forward Weight ActiveConn InActConn</span></span><br><span class="line">TCP  10.96.0.1:443 rr</span><br><span class="line"><span class="meta prompt_">  -&gt; </span><span class="language-bash">172.18.0.5:6443              Masq    1      3          0</span></span><br><span class="line">TCP  10.96.0.10:53 rr</span><br><span class="line"><span class="meta prompt_">  -&gt; </span><span class="language-bash">10.244.0.2:53                Masq    1      0          0</span></span><br><span class="line"><span class="meta prompt_">  -&gt; </span><span class="language-bash">10.244.0.4:53                Masq    1      0          0</span></span><br><span class="line">TCP  10.96.0.10:9153 rr</span><br><span class="line"><span class="meta prompt_">  -&gt; </span><span class="language-bash">10.244.0.2:9153              Masq    1      0          0</span></span><br><span class="line"><span class="meta prompt_">  -&gt; </span><span class="language-bash">10.244.0.4:9153              Masq    1      0          0</span></span><br><span class="line">UDP  10.96.0.10:53 rr</span><br><span class="line"><span class="meta prompt_">  -&gt; </span><span class="language-bash">10.244.0.2:53                Masq    1      0          0</span></span><br><span class="line"><span class="meta prompt_">  -&gt; </span><span class="language-bash">10.244.0.4:53                Masq    1      0          0</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>如上所示，kube-proxy 通过 iptables 允许访问
+<strong>KUBE-CLUSTER-IP</strong> 的流量，并通过在虚拟网卡
+<code>kube-ipvs0</code> 上配置 ClusterIP 的方式，让内核以为 ClusterIP
+为本机 IP，从而走 iptables 的 <strong>INPUT</strong>
+链进入本机，继而通过 <code>IP Virtual Server</code> 找到 Real Server
+提供服务。</p>
+<p><strong><code>IPVS模式工作原理示意图:</code></strong></p>
+<figure>
+<img src="/images/ipvs工作原理图.png" alt="ipvs工作原理图.png" />
+<figcaption aria-hidden="true">ipvs工作原理图.png</figcaption>
+</figure>
+<h1 id="faq">FAQ</h1>
+<p><code>Q:</code> 为什么每个svc会在ipvs网卡增加vip地址</p>
+<p><code>A:</code> 由于<strong>IPVS</strong>没有实现
+<code>NF_IP_PRE_ROUTING</code>，就不会在进入<code>NF_IP_LOCAL_IN</code>之前进行地址转换。那么数据包经过路由判断后，会进入<code>NF_IP_LOCAL_IN</code>
+<strong>Hook</strong>点，<strong>IPVS</strong>回调函数如果发现目标<strong>IP</strong>地址不属于该节点，就会丢弃数据包。因此，K8S创建dummy网络接口k8s-ipvs0，然后将service
+cluster ip绑定到该接口上，内核在处理数据包时，会发现该目标
+<strong>IP</strong> 地址属于该节点，于是可以继续处理数据包。</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2024/11/06/k8s/%E9%AB%98%E5%8F%AF%E7%94%A8%E6%A8%A1%E5%BC%8F%E4%B8%8B%E7%9A%84%E9%80%89%E4%B8%BB%E6%9C%BA%E5%88%B6/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <!-- <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2025-07-14 06:50:08
+            </span> -->
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/k8s/" title="k8s">
+                        #k8s
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/ipvs/" title="ipvs">
+                        #ipvs
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2024/11/06/k8s/iptables/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ipvs"><span class="toc-text">IPVS</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%A5%E7%BD%91%E6%B5%81%E9%87%8F"><span class="toc-text">入网流量</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#faq"><span class="toc-text">FAQ</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+    </ul>
+  </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + K8s%20IPVS%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86 + '&url=' + https%3A%2F%2Fericpuwang.github.io%2F2024%2F11%2F06%2Fk8s%2Fipvs%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://ericpuwang.github.io/2024/11/06/k8s/ipvs/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="ericpuwang" />
+  <!-- Open Graph Description 简短摘要-->
+  
+  <!-- 用于搜索引擎的文章摘要 -->
+  
+  
+  
+  <title>
+    
+      高可用模式下的选主机制 
+      
+      
+      |
+    
+     Hexo
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.jpeg">
+    <link rel="icon" href="/images/favicon.jpeg">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/font.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  <script defer type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" rel="stylesheet">
+  <script defer type="text/javascript" src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.jpeg" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">ericpuwang</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">高可用模式下的选主机制</div>
+      <div class="post-attach">
+        <!-- <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2025-07-14 06:50:08
+        </span> -->
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/leaderelection/" title="leaderelection">
+                    #leaderelection
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/k8s/" title="k8s">
+                    #k8s
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="选举原因">选举原因</h1>
+<p>k8s为了保证<code>kube-scheduler</code>和<code>kube-manager-controller</code>组件的高可用性，每个组件本身通过多实例副本方式部署。但是由于多个实例同时使用<code>informer</code>去监听处理必然带来一致性或重复执行问题，故采用分布式锁(选举)机制规避该问题</p>
+<p>k8s是通过<code>leaderelection</code>来实现选举，只有一个实例能拿到锁，只有拿到锁的实例可以运行，其他实例会不断重试(轮询)方式获取锁</p>
+<h1 id="选举配置">选举配置</h1>
+<ul>
+<li><code>LeaseDuration</code>:
+锁的时长，通过该值判断是否超时，超时则认定丢失锁</li>
+<li><code>RenewDeadline</code>:
+续约时长，每次<code>lease ttl</code>的时长</li>
+<li><code>RetryPeriod</code>: 周期重试获取锁的间隔</li>
+<li><code>Callbacks</code>: 自定义方法
+<ul>
+<li><code>OnStartedLeading func(context.Context)</code>:
+作为leader启动时进行回调</li>
+<li><code>OnStoppedLeading func()</code>: 关闭时进行回调</li>
+<li><code>OnNewLeader func(identity string)</code>:
+转换为leader时进行回调</li>
+</ul></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line"><span class="title function_">import</span> <span class="params">(</span></span><br><span class="line"><span class="params">	<span class="string">&quot;context&quot;</span></span></span><br><span class="line"><span class="params">	<span class="string">&quot;flag&quot;</span></span></span><br><span class="line"><span class="params">	<span class="string">&quot;os&quot;</span></span></span><br><span class="line"><span class="params">	<span class="string">&quot;time&quot;</span></span></span><br><span class="line"><span class="params"></span></span><br><span class="line"><span class="params">	metav1 <span class="string">&quot;k8s.io/apimachinery/pkg/apis/meta/v1&quot;</span></span></span><br><span class="line"><span class="params">	clientset <span class="string">&quot;k8s.io/client-go/kubernetes&quot;</span></span></span><br><span class="line"><span class="params">	<span class="string">&quot;k8s.io/client-go/rest&quot;</span></span></span><br><span class="line"><span class="params">	<span class="string">&quot;k8s.io/client-go/tools/leaderelection&quot;</span></span></span><br><span class="line"><span class="params">	<span class="string">&quot;k8s.io/client-go/tools/leaderelection/resourcelock&quot;</span></span></span><br><span class="line"><span class="params">	<span class="string">&quot;k8s.io/klog&quot;</span></span></span><br><span class="line"><span class="params">)</span></span><br><span class="line"></span><br><span class="line">var client *clientset.Clientset</span><br><span class="line"></span><br><span class="line">func <span class="title function_">newLeaseLock</span><span class="params">(lockname, podname, namespace <span class="built_in">string</span>)</span> *resourcelock.LeaseLock &#123;</span><br><span class="line">	<span class="keyword">return</span> &amp;resourcelock.LeaseLock&#123;</span><br><span class="line">		LeaseMeta: metav1.ObjectMeta&#123;</span><br><span class="line">			Name:      lockname,</span><br><span class="line">			Namespace: namespace,</span><br><span class="line">		&#125;,</span><br><span class="line">		Client: client.CoordinationV1(),</span><br><span class="line">		LockConfig: resourcelock.ResourceLockConfig&#123;</span><br><span class="line">			Identity: podname,</span><br><span class="line">		&#125;,</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func run(lock *resourcelock.LeaseLock, ctx context.Context, id <span class="built_in">string</span>) &#123;</span><br><span class="line">	leaderelection.RunOrDie(ctx, leaderelection.LeaderElectionConfig&#123;</span><br><span class="line">		Lock:            lock,</span><br><span class="line">		ReleaseOnCancel: <span class="literal">true</span>,</span><br><span class="line">		LeaseDuration:   <span class="number">15</span> * time.Second,</span><br><span class="line">		RenewDeadline:   <span class="number">10</span> * time.Second,</span><br><span class="line">		RetryPeriod:     <span class="number">2</span> * time.Second,</span><br><span class="line">		Callbacks: leaderelection.LeaderCallbacks&#123;</span><br><span class="line">			OnStartedLeading: func(c context.Context) &#123;</span><br><span class="line">				klog.Info(<span class="string">&quot;get identity&quot;</span>, <span class="string">&quot;leader: &quot;</span>, lock.LeaseMeta.Name)</span><br><span class="line">				select &#123;&#125;</span><br><span class="line">			&#125;,</span><br><span class="line">			OnStoppedLeading: func() &#123;</span><br><span class="line">				klog.Info(<span class="string">&quot;no longer the leader, staying inactive.&quot;</span>)</span><br><span class="line">			&#125;,</span><br><span class="line">			OnNewLeader: func(current_id <span class="built_in">string</span>) &#123;</span><br><span class="line">				<span class="keyword">if</span> current_id == id &#123;</span><br><span class="line">					klog.Info(<span class="string">&quot;still the leader!&quot;</span>)</span><br><span class="line">					<span class="keyword">return</span></span><br><span class="line">				&#125;</span><br><span class="line">				klog.Info(<span class="string">&quot;new leader is %s&quot;</span>, current_id)</span><br><span class="line">			&#125;,</span><br><span class="line">		&#125;,</span><br><span class="line">	&#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">	var (</span><br><span class="line">		leaseLockName      <span class="built_in">string</span></span><br><span class="line">		leaseLockNamespace <span class="built_in">string</span></span><br><span class="line">		podName            = os.Getenv(<span class="string">&quot;POD_NAME&quot;</span>)</span><br><span class="line">	)</span><br><span class="line">	flag.StringVar(&amp;leaseLockName, <span class="string">&quot;lease-name&quot;</span>, <span class="string">&quot;&quot;</span>, <span class="string">&quot;Name of lease lock&quot;</span>)</span><br><span class="line">	flag.StringVar(&amp;leaseLockNamespace, <span class="string">&quot;lease-namespace&quot;</span>, <span class="string">&quot;default&quot;</span>, <span class="string">&quot;Name of lease lock namespace&quot;</span>)</span><br><span class="line">	flag.Parse()</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> leaseLockName == <span class="string">&quot;&quot;</span> &#123;</span><br><span class="line">		klog.Fatal(<span class="string">&quot;missing lease-name flag&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> leaseLockNamespace == <span class="string">&quot;&quot;</span> &#123;</span><br><span class="line">		klog.Fatal(<span class="string">&quot;missing lease-namespace flag&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	config, err := rest.InClusterConfig()</span><br><span class="line">	client = clientset.NewForConfigOrDie(config)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> err != nil &#123;</span><br><span class="line">		klog.Fatalf(<span class="string">&quot;failed to get kubeconfig&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	ctx, cancel := context.WithCancel(context.Background())</span><br><span class="line">	defer cancel()</span><br><span class="line"></span><br><span class="line">	lock := newLeaseLock(leaseLockName, podName, leaseLockNamespace)</span><br><span class="line">	run(lock, ctx, podName)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="选举逻辑">选举逻辑</h1>
+<h2 id="启动选举">启动选举</h2>
+<p><strong>资源锁列表</strong></p>
+<ul>
+<li><code>leases</code>(recommend)</li>
+<li><code>endpointsleases</code></li>
+<li><code>configmapsleases</code></li>
+<li><code>configmaps</code></li>
+<li><code>endpoints</code></li>
+</ul>
+<p><strong>创建资源锁</strong></p>
+<ul>
+<li><p>使用<code>resourcelock.New</code>创建 <figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Manufacture will create a lock of a given type according to the input parameters</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">New</span><span class="params">(lockType <span class="type">string</span>, ns <span class="type">string</span>, name <span class="type">string</span>, coreClient corev1.CoreV1Interface, coordinationClient coordinationv1.CoordinationV1Interface, rlc ResourceLockConfig)</span></span> (Interface, <span class="type">error</span>) &#123;</span><br><span class="line">	leaseLock := &amp;LeaseLock&#123;</span><br><span class="line">		LeaseMeta: metav1.ObjectMeta&#123;</span><br><span class="line">			Namespace: ns,</span><br><span class="line">			Name:      name,</span><br><span class="line">		&#125;,</span><br><span class="line">		Client:     coordinationClient,</span><br><span class="line">		LockConfig: rlc,</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">switch</span> lockType &#123;</span><br><span class="line">	<span class="keyword">case</span> endpointsResourceLock:</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">&quot;endpoints lock is removed, migrate to %s&quot;</span>, LeasesResourceLock)</span><br><span class="line">	<span class="keyword">case</span> configMapsResourceLock:</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">&quot;configmaps lock is removed, migrate to %s&quot;</span>, LeasesResourceLock)</span><br><span class="line">	<span class="keyword">case</span> LeasesResourceLock:</span><br><span class="line">		<span class="keyword">return</span> leaseLock, <span class="literal">nil</span></span><br><span class="line">	<span class="keyword">case</span> endpointsLeasesResourceLock:</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">&quot;endpointsleases lock is removed, migrate to %s&quot;</span>, LeasesResourceLock)</span><br><span class="line">	<span class="keyword">case</span> configMapsLeasesResourceLock:</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">&quot;configmapsleases lock is removed, migrated to %s&quot;</span>, LeasesResourceLock)</span><br><span class="line">	<span class="keyword">default</span>:</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">&quot;Invalid lock-type %s&quot;</span>, lockType)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p></li>
+<li><p>使用<code>resourcelock.NewFromKubeconfig</code>创建
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// NewFromKubeconfig will create a lock of a given type according to the input parameters.</span></span><br><span class="line"><span class="comment">// Timeout set for a client used to contact to Kubernetes should be lower than</span></span><br><span class="line"><span class="comment">// RenewDeadline to keep a single hung request from forcing a leader loss.</span></span><br><span class="line"><span class="comment">// Setting it to max(time.Second, RenewDeadline/2) as a reasonable heuristic.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewFromKubeconfig</span><span class="params">(lockType <span class="type">string</span>, ns <span class="type">string</span>, name <span class="type">string</span>, rlc ResourceLockConfig, kubeconfig *restclient.Config, renewDeadline time.Duration)</span></span> (Interface, <span class="type">error</span>) &#123;</span><br><span class="line">	<span class="comment">// shallow copy, do not modify the kubeconfig</span></span><br><span class="line">	config := *kubeconfig</span><br><span class="line">	timeout := renewDeadline / <span class="number">2</span></span><br><span class="line">	<span class="keyword">if</span> timeout &lt; time.Second &#123;</span><br><span class="line">		timeout = time.Second</span><br><span class="line">	&#125;</span><br><span class="line">	config.Timeout = timeout</span><br><span class="line">	leaderElectionClient := clientset.NewForConfigOrDie(restclient.AddUserAgent(&amp;config, <span class="string">&quot;leader-election&quot;</span>))</span><br><span class="line">	<span class="keyword">return</span> New(lockType, ns, name, leaderElectionClient.CoreV1(), leaderElectionClient.CoordinationV1(), rlc)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p></li>
+</ul>
+<p><strong>选举</strong></p>
+<p>准备好资源锁后，调用方法<code>leaderelection.RunOrDie</code>开始选举。
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">leaderelection.RunOrDie(ctx, leaderelection.LeaderElectionConfig&#123;</span><br><span class="line">	Lock:            lock,</span><br><span class="line">	ReleaseOnCancel: <span class="literal">true</span>,</span><br><span class="line">	LeaseDuration:   <span class="number">15</span> * time.Second,</span><br><span class="line">	RenewDeadline:   <span class="number">10</span> * time.Second,</span><br><span class="line">	RetryPeriod:     <span class="number">2</span> * time.Second,</span><br><span class="line">	Callbacks: leaderelection.LeaderCallbacks&#123;</span><br><span class="line">		OnStartedLeading: <span class="function"><span class="keyword">func</span><span class="params">(c context.Context)</span></span> &#123;</span><br><span class="line">			klog.Info(<span class="string">&quot;get identity&quot;</span>, <span class="string">&quot;leader: &quot;</span>, lock.LeaseMeta.Name)</span><br><span class="line">			<span class="keyword">select</span> &#123;&#125;</span><br><span class="line">		&#125;,</span><br><span class="line">		OnStoppedLeading: <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">			klog.Info(<span class="string">&quot;no longer the leader, staying inactive.&quot;</span>)</span><br><span class="line">		&#125;,</span><br><span class="line">		OnNewLeader: <span class="function"><span class="keyword">func</span><span class="params">(current_id <span class="type">string</span>)</span></span> &#123;</span><br><span class="line">			<span class="keyword">if</span> current_id == id &#123;</span><br><span class="line">				klog.Info(<span class="string">&quot;still the leader!&quot;</span>)</span><br><span class="line">				<span class="keyword">return</span></span><br><span class="line">			&#125;</span><br><span class="line">			klog.Info(<span class="string">&quot;new leader is %s&quot;</span>, current_id)</span><br><span class="line">		&#125;,</span><br><span class="line">	&#125;,</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<h2 id="选举主流程">选举主流程</h2>
+<p>启动选举后，<code>RunOrDie</code>方法会调用<code>le.Run(ctx)</code>方法开始真正的选举流程，该方法除非在以下情况下才会返回：</p>
+<ul>
+<li><code>ctx</code>被取消（外部要求中止选举流程）</li>
+<li>当选了 Leader 后，任期结束（网络或某种原因导致续期失败）</li>
+</ul>
+<p>当未曾竞选Leader时，则会卡在<code>le.acquire</code>方法中持续竞选</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Run starts the leader election loop. Run will not return</span></span><br><span class="line"><span class="comment">// before leader election loop is stopped by ctx or it has</span></span><br><span class="line"><span class="comment">// stopped holding the leader lease</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(le *LeaderElector)</span></span> Run(ctx context.Context) &#123;</span><br><span class="line">	<span class="keyword">defer</span> runtime.HandleCrash()</span><br><span class="line">	<span class="keyword">defer</span> le.config.Callbacks.OnStoppedLeading()</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> !le.acquire(ctx) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="comment">// ctx signalled done</span></span><br><span class="line">	&#125;</span><br><span class="line">	ctx, cancel := context.WithCancel(ctx)</span><br><span class="line">	<span class="keyword">defer</span> cancel()</span><br><span class="line">	<span class="keyword">go</span> le.config.Callbacks.OnStartedLeading(ctx)</span><br><span class="line">	le.renew(ctx)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// RunOrDie starts a client with the provided config or panics if the config</span></span><br><span class="line"><span class="comment">// fails to validate. RunOrDie blocks until leader election loop is</span></span><br><span class="line"><span class="comment">// stopped by ctx or it has stopped holding the leader lease</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">RunOrDie</span><span class="params">(ctx context.Context, lec LeaderElectionConfig)</span></span> &#123;</span><br><span class="line">	le, err := NewLeaderElector(lec)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> lec.WatchDog != <span class="literal">nil</span> &#123;</span><br><span class="line">		lec.WatchDog.SetLeaderElection(le)</span><br><span class="line">	&#125;</span><br><span class="line">	le.Run(ctx)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="竞选">竞选</h2>
+<p><strong>竞选逻辑</strong></p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// acquire loops calling tryAcquireOrRenew and returns true immediately when tryAcquireOrRenew succeeds.</span></span><br><span class="line"><span class="comment">// Returns false if ctx signals done.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(le *LeaderElector)</span></span> acquire(ctx context.Context) <span class="type">bool</span> &#123;</span><br><span class="line">	ctx, cancel := context.WithCancel(ctx)</span><br><span class="line">	<span class="keyword">defer</span> cancel()</span><br><span class="line">	succeeded := <span class="literal">false</span></span><br><span class="line">	desc := le.config.Lock.Describe()</span><br><span class="line">	klog.Infof(<span class="string">&quot;attempting to acquire leader lease %v...&quot;</span>, desc)</span><br><span class="line">	wait.JitterUntil(<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">if</span> !le.config.Coordinated &#123;</span><br><span class="line">			succeeded = le.tryAcquireOrRenew(ctx)</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			succeeded = le.tryCoordinatedRenew(ctx)</span><br><span class="line">		&#125;</span><br><span class="line">		le.maybeReportTransition()</span><br><span class="line">		<span class="keyword">if</span> !succeeded &#123;</span><br><span class="line">			klog.V(<span class="number">4</span>).Infof(<span class="string">&quot;failed to acquire lease %v&quot;</span>, desc)</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">		le.config.Lock.RecordEvent(<span class="string">&quot;became leader&quot;</span>)</span><br><span class="line">		le.metrics.leaderOn(le.config.Name)</span><br><span class="line">		klog.Infof(<span class="string">&quot;successfully acquired lease %v&quot;</span>, desc)</span><br><span class="line">		cancel()</span><br><span class="line">	&#125;, le.config.RetryPeriod, JitterFactor, <span class="literal">true</span>, ctx.Done())</span><br><span class="line">	<span class="keyword">return</span> succeeded</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>返回值情况：</p>
+<ul>
+<li><code>succeeded</code>
+默认值是<code>false</code>，在竞选循环中，外部通过<code>ctx</code>中止竞选时会中止<code>wait.JitterUntil</code>循环并返回<code>false</code></li>
+<li>如果竞选成功，则会改写<code>succeeded=true</code>并手动调用<code>cancel()</code>中止<code>wait.JitterUntil</code>循环</li>
+</ul>
+<p>故<code>acquire</code>函数只会有两种情况会返回：</p>
+<ul>
+<li><code>true</code>：当选 leader</li>
+<li><code>false</code>：外部中止竞选</li>
+</ul>
+<p>未当选的竞选者会在<code>wait.JitterUntil</code>循环中持续尝试</p>
+<h2 id="抢锁和续约">抢锁和续约</h2>
+<p>抢锁操作和续约操作逻辑都在函数<code>tryAcquireOrRenew</code></p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// tryAcquireOrRenew tries to acquire a leader lease if it is not already acquired,</span></span><br><span class="line"><span class="comment">// else it tries to renew the lease if it has already been acquired. Returns true</span></span><br><span class="line"><span class="comment">// on success else returns false.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(le *LeaderElector)</span></span> tryAcquireOrRenew(ctx context.Context) <span class="type">bool</span> &#123;</span><br><span class="line">	now := metav1.NewTime(le.clock.Now())</span><br><span class="line">	leaderElectionRecord := rl.LeaderElectionRecord&#123;</span><br><span class="line">		HolderIdentity:       le.config.Lock.Identity(),</span><br><span class="line">		LeaseDurationSeconds: <span class="type">int</span>(le.config.LeaseDuration / time.Second),</span><br><span class="line">		RenewTime:            now,</span><br><span class="line">		AcquireTime:          now,</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 1. fast path for the leader to update optimistically assuming that the record observed</span></span><br><span class="line">	<span class="comment">// last time is the current version.</span></span><br><span class="line">	<span class="keyword">if</span> le.IsLeader() &amp;&amp; le.isLeaseValid(now.Time) &#123;</span><br><span class="line">		oldObservedRecord := le.getObservedRecord()</span><br><span class="line">		leaderElectionRecord.AcquireTime = oldObservedRecord.AcquireTime</span><br><span class="line">		leaderElectionRecord.LeaderTransitions = oldObservedRecord.LeaderTransitions</span><br><span class="line"></span><br><span class="line">		err := le.config.Lock.Update(ctx, leaderElectionRecord)</span><br><span class="line">		<span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</span><br><span class="line">			le.setObservedRecord(&amp;leaderElectionRecord)</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">		&#125;</span><br><span class="line">		klog.Errorf(<span class="string">&quot;Failed to update lock optimistically: %v, falling back to slow path&quot;</span>, err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 2. obtain or create the ElectionRecord</span></span><br><span class="line">	oldLeaderElectionRecord, oldLeaderElectionRawRecord, err := le.config.Lock.Get(ctx)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> !errors.IsNotFound(err) &#123;</span><br><span class="line">			klog.Errorf(<span class="string">&quot;error retrieving resource lock %v: %v&quot;</span>, le.config.Lock.Describe(), err)</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> err = le.config.Lock.Create(ctx, leaderElectionRecord); err != <span class="literal">nil</span> &#123;</span><br><span class="line">			klog.Errorf(<span class="string">&quot;error initially creating leader election record: %v&quot;</span>, err)</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		le.setObservedRecord(&amp;leaderElectionRecord)</span><br><span class="line"></span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 3. Record obtained, check the Identity &amp; Time</span></span><br><span class="line">	<span class="keyword">if</span> !bytes.Equal(le.observedRawRecord, oldLeaderElectionRawRecord) &#123;</span><br><span class="line">		le.setObservedRecord(oldLeaderElectionRecord)</span><br><span class="line"></span><br><span class="line">		le.observedRawRecord = oldLeaderElectionRawRecord</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(oldLeaderElectionRecord.HolderIdentity) &gt; <span class="number">0</span> &amp;&amp; le.isLeaseValid(now.Time) &amp;&amp; !le.IsLeader() &#123;</span><br><span class="line">		klog.V(<span class="number">4</span>).Infof(<span class="string">&quot;lock is held by %v and has not yet expired&quot;</span>, oldLeaderElectionRecord.HolderIdentity)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 4. We&#x27;re going to try to update. The leaderElectionRecord is set to it&#x27;s default</span></span><br><span class="line">	<span class="comment">// here. Let&#x27;s correct it before updating.</span></span><br><span class="line">	<span class="keyword">if</span> le.IsLeader() &#123;</span><br><span class="line">		leaderElectionRecord.AcquireTime = oldLeaderElectionRecord.AcquireTime</span><br><span class="line">		leaderElectionRecord.LeaderTransitions = oldLeaderElectionRecord.LeaderTransitions</span><br><span class="line">		le.metrics.slowpathExercised(le.config.Name)</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		leaderElectionRecord.LeaderTransitions = oldLeaderElectionRecord.LeaderTransitions + <span class="number">1</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// update the lock itself</span></span><br><span class="line">	<span class="keyword">if</span> err = le.config.Lock.Update(ctx, leaderElectionRecord); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		klog.Errorf(<span class="string">&quot;Failed to update lock: %v&quot;</span>, err)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	le.setObservedRecord(&amp;leaderElectionRecord)</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="原理分析">原理分析</h1>
+<h2 id="任期原理">任期原理</h2>
+<p>基于<code>le.observedTime</code>判断当前主结点是否有效，<code>le.observedTime</code>是在主结点发生变化时调用<code>le.setObservedRecord</code>方法更新。更新时机：</p>
+<ul>
+<li>锁不存在，创建锁成功时更新</li>
+<li>获取到锁记录和缓存的不同，说明上次尝试获取锁到现在的间隔内主结点变更，更新缓存</li>
+<li>主结点超期没续期且当前节点抢锁成功，更新缓存</li>
+</ul>
+<p>所以<code>le.observedTime</code>变化的时候都是监测到主结点变化的时间，所以<code>le.observedTime + LeaseDuration</code>的时间就是主结点的结束时间</p>
+<h2 id="抢锁原理">抢锁原理</h2>
+<p>基于 kubernetes 的资源乐观锁实现的(通常是主结点自己去更新锁信息)</p>
+<ul>
+<li>获取锁方法<code>le.config.Lock.Get(ctx)</code>会取得当前锁的最新<code>resourceVersion</code>并保存</li>
+<li>更新锁时提供保存的<code>resourceVersion</code></li>
+<li>Kubernetes对比<code>resourceVersion</code>和最新值，如果相等则允许更新，返回成功，否则更新失败</li>
+</ul>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2024/11/03/%E7%AE%97%E6%B3%95/%E6%95%A3%E5%88%97%E8%A1%A8/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <!-- <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2025-07-14 06:50:08
+            </span> -->
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/leaderelection/" title="leaderelection">
+                        #leaderelection
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/k8s/" title="k8s">
+                        #k8s
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2024/11/06/k8s/ipvs/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%80%89%E4%B8%BE%E5%8E%9F%E5%9B%A0"><span class="toc-text">选举原因</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%80%89%E4%B8%BE%E9%85%8D%E7%BD%AE"><span class="toc-text">选举配置</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%80%89%E4%B8%BE%E9%80%BB%E8%BE%91"><span class="toc-text">选举逻辑</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E9%80%89%E4%B8%BE"><span class="toc-text">启动选举</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%89%E4%B8%BE%E4%B8%BB%E6%B5%81%E7%A8%8B"><span class="toc-text">选举主流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AB%9E%E9%80%89"><span class="toc-text">竞选</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%A2%E9%94%81%E5%92%8C%E7%BB%AD%E7%BA%A6"><span class="toc-text">抢锁和续约</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90"><span class="toc-text">原理分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%BB%E6%9C%9F%E5%8E%9F%E7%90%86"><span class="toc-text">任期原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%A2%E9%94%81%E5%8E%9F%E7%90%86"><span class="toc-text">抢锁原理</span></a></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+    </ul>
+  </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + %E9%AB%98%E5%8F%AF%E7%94%A8%E6%A8%A1%E5%BC%8F%E4%B8%8B%E7%9A%84%E9%80%89%E4%B8%BB%E6%9C%BA%E5%88%B6 + '&url=' + https%3A%2F%2Fericpuwang.github.io%2F2024%2F11%2F06%2Fk8s%2F%25E9%25AB%2598%25E5%258F%25AF%25E7%2594%25A8%25E6%25A8%25A1%25E5%25BC%258F%25E4%25B8%258B%25E7%259A%2584%25E9%2580%2589%25E4%25B8%25BB%25E6%259C%25BA%25E5%2588%25B6%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://ericpuwang.github.io/2024/11/06/k8s/%E9%AB%98%E5%8F%AF%E7%94%A8%E6%A8%A1%E5%BC%8F%E4%B8%8B%E7%9A%84%E9%80%89%E4%B8%BB%E6%9C%BA%E5%88%B6/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
