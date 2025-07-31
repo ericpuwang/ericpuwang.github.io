@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="author" content="ericpuwang" />
+  <!-- Open Graph Description 简短摘要-->
+  
+  <!-- 用于搜索引擎的文章摘要 -->
+  
+  
+  
+  <title>
+    
+      Go语言许可证管理模块实践 
+      
+      
+      |
+    
+     Hexo
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.jpeg">
+    <link rel="icon" href="/images/favicon.jpeg">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/font.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  <script defer type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" rel="stylesheet">
+  <script defer type="text/javascript" src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.jpeg" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">ericpuwang</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Go语言许可证管理模块实践</div>
+      <div class="post-attach">
+        <!-- <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2025-07-31 03:28:30
+        </span> -->
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/golang/" title="golang">
+                    #golang
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="基于golang的许可证管理">基于Golang的许可证管理</h1>
+<blockquote>
+<p>在 Go
+语言中实现一个安全、高效的许可证管理模块需要考虑多个方面，包括许可证生成、签名、验证、存储和吊销等核心功能</p>
+</blockquote>
+<h2 id="许可证数据结构设计">许可证数据结构设计</h2>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// License 许可证结构</span></span><br><span class="line"><span class="keyword">type</span> License <span class="keyword">struct</span> &#123;</span><br><span class="line">    ID              <span class="type">string</span>            <span class="string">`json:&quot;id&quot;`</span>               <span class="comment">// 许可证ID</span></span><br><span class="line">    CustomerID      <span class="type">string</span>            <span class="string">`json:&quot;customer_id&quot;`</span>      <span class="comment">// 客户ID</span></span><br><span class="line">    IssueDate       time.Time         <span class="string">`json:&quot;issue_date&quot;`</span>       <span class="comment">// 发行日期</span></span><br><span class="line">    ExpireDate      time.Time         <span class="string">`json:&quot;expire_date&quot;`</span>      <span class="comment">// 过期日期</span></span><br><span class="line">    Features        <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>    <span class="string">`json:&quot;features&quot;`</span>         <span class="comment">// 功能权限映射</span></span><br><span class="line">    RateLimits      <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>    <span class="string">`json:&quot;rate_limits&quot;`</span>      <span class="comment">// API速率限制</span></span><br><span class="line">    HardwareBinding <span class="type">string</span>            <span class="string">`json:&quot;hardware_binding&quot;`</span> <span class="comment">// 硬件绑定信息</span></span><br><span class="line">    Signature       <span class="type">string</span>            <span class="string">`json:&quot;signature&quot;`</span>        <span class="comment">// 数字签名</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Feature 功能权限常量</span></span><br><span class="line"><span class="keyword">const</span> (</span><br><span class="line">    FeatureBasic    = <span class="string">&quot;basic&quot;</span></span><br><span class="line">    FeatureAdvanced = <span class="string">&quot;advanced&quot;</span></span><br><span class="line">    FeaturePro      = <span class="string">&quot;pro&quot;</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h2 id="许可证生成和签名">许可证生成和签名</h2>
+<blockquote>
+<p>许可证生成模块负责创建许可证并使用私钥进行签名</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Generator 许可证生成器</span></span><br><span class="line"><span class="keyword">type</span> Generator <span class="keyword">struct</span> &#123;</span><br><span class="line">    privateKey *rsa.PrivateKey</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// NewGenerator 创建许可证生成器</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewGenerator</span><span class="params">(privateKey *rsa.PrivateKey)</span></span> *Generator &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;Generator&#123;privateKey: privateKey&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// GenerateLicense 生成新许可证</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(g *Generator)</span></span> GenerateLicense(</span><br><span class="line">    id, customerID <span class="type">string</span>,</span><br><span class="line">    issueDate, expireDate time.Time,</span><br><span class="line">    features <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>,</span><br><span class="line">    rateLimits <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>,</span><br><span class="line">    hardwareID <span class="type">string</span>,</span><br><span class="line">) (*License, <span class="type">error</span>) &#123;</span><br><span class="line">    license := &amp;License&#123;</span><br><span class="line">        ID:              id,</span><br><span class="line">        CustomerID:      customerID,</span><br><span class="line">        IssueDate:       issueDate,</span><br><span class="line">        ExpireDate:      expireDate,</span><br><span class="line">        Features:        features,</span><br><span class="line">        RateLimits:      rateLimits,</span><br><span class="line">        HardwareBinding: hardwareID,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 生成签名</span></span><br><span class="line">    err := g.sign(license)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> license, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// sign 对许可证进行签名</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(g *Generator)</span></span> sign(license *License) <span class="type">error</span> &#123;</span><br><span class="line">    <span class="comment">// 移除签名字段后序列化</span></span><br><span class="line">    licenseBytes, err := json.Marshal(<span class="keyword">struct</span> &#123;</span><br><span class="line">        ID              <span class="type">string</span>            <span class="string">`json:&quot;id&quot;`</span></span><br><span class="line">        CustomerID      <span class="type">string</span>            <span class="string">`json:&quot;customer_id&quot;`</span></span><br><span class="line">        IssueDate       time.Time         <span class="string">`json:&quot;issue_date&quot;`</span></span><br><span class="line">        ExpireDate      time.Time         <span class="string">`json:&quot;expire_date&quot;`</span></span><br><span class="line">        Features        <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>    <span class="string">`json:&quot;features&quot;`</span></span><br><span class="line">        RateLimits      <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>    <span class="string">`json:&quot;rate_limits&quot;`</span></span><br><span class="line">        HardwareBinding <span class="type">string</span>            <span class="string">`json:&quot;hardware_binding&quot;`</span></span><br><span class="line">    &#125;&#123;</span><br><span class="line">        ID:              license.ID,</span><br><span class="line">        CustomerID:      license.CustomerID,</span><br><span class="line">        IssueDate:       license.IssueDate,</span><br><span class="line">        ExpireDate:      license.ExpireDate,</span><br><span class="line">        Features:        license.Features,</span><br><span class="line">        RateLimits:      license.RateLimits,</span><br><span class="line">        HardwareBinding: license.HardwareBinding,</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 计算哈希</span></span><br><span class="line">    hash := sha256.Sum256(licenseBytes)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 使用RSA PKCS#1 v1.5进行签名</span></span><br><span class="line">    signature, err := rsa.SignPKCS1v15(</span><br><span class="line">        <span class="literal">nil</span>,</span><br><span class="line">        g.privateKey,</span><br><span class="line">        crypto.SHA256,</span><br><span class="line">        hash[:],</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 转换为Base64编码</span></span><br><span class="line">    license.Signature = base64.StdEncoding.EncodeToString(signature)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Generator 许可证生成器</span></span><br><span class="line"><span class="keyword">type</span> Generator <span class="keyword">struct</span> &#123;</span><br><span class="line">    privateKey *rsa.PrivateKey</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// NewGenerator 创建许可证生成器</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewGenerator</span><span class="params">(privateKey *rsa.PrivateKey)</span></span> *Generator &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;Generator&#123;privateKey: privateKey&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// GenerateLicense 生成新许可证</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(g *Generator)</span></span> GenerateLicense(</span><br><span class="line">    id, customerID <span class="type">string</span>,</span><br><span class="line">    issueDate, expireDate time.Time,</span><br><span class="line">    features <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>,</span><br><span class="line">    rateLimits <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>,</span><br><span class="line">    hardwareID <span class="type">string</span>,</span><br><span class="line">) (*License, <span class="type">error</span>) &#123;</span><br><span class="line">    license := &amp;License&#123;</span><br><span class="line">        ID:              id,</span><br><span class="line">        CustomerID:      customerID,</span><br><span class="line">        IssueDate:       issueDate,</span><br><span class="line">        ExpireDate:      expireDate,</span><br><span class="line">        Features:        features,</span><br><span class="line">        RateLimits:      rateLimits,</span><br><span class="line">        HardwareBinding: hardwareID,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 生成签名</span></span><br><span class="line">    err := g.sign(license)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> license, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// sign 对许可证进行签名</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(g *Generator)</span></span> sign(license *License) <span class="type">error</span> &#123;</span><br><span class="line">    <span class="comment">// 移除签名字段后序列化</span></span><br><span class="line">    licenseBytes, err := json.Marshal(<span class="keyword">struct</span> &#123;</span><br><span class="line">        ID              <span class="type">string</span>            <span class="string">`json:&quot;id&quot;`</span></span><br><span class="line">        CustomerID      <span class="type">string</span>            <span class="string">`json:&quot;customer_id&quot;`</span></span><br><span class="line">        IssueDate       time.Time         <span class="string">`json:&quot;issue_date&quot;`</span></span><br><span class="line">        ExpireDate      time.Time         <span class="string">`json:&quot;expire_date&quot;`</span></span><br><span class="line">        Features        <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>    <span class="string">`json:&quot;features&quot;`</span></span><br><span class="line">        RateLimits      <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>    <span class="string">`json:&quot;rate_limits&quot;`</span></span><br><span class="line">        HardwareBinding <span class="type">string</span>            <span class="string">`json:&quot;hardware_binding&quot;`</span></span><br><span class="line">    &#125;&#123;</span><br><span class="line">        ID:              license.ID,</span><br><span class="line">        CustomerID:      license.CustomerID,</span><br><span class="line">        IssueDate:       license.IssueDate,</span><br><span class="line">        ExpireDate:      license.ExpireDate,</span><br><span class="line">        Features:        license.Features,</span><br><span class="line">        RateLimits:      license.RateLimits,</span><br><span class="line">        HardwareBinding: license.HardwareBinding,</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 计算哈希</span></span><br><span class="line">    hash := sha256.Sum256(licenseBytes)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 使用RSA PKCS#1 v1.5进行签名</span></span><br><span class="line">    signature, err := rsa.SignPKCS1v15(</span><br><span class="line">        <span class="literal">nil</span>,</span><br><span class="line">        g.privateKey,</span><br><span class="line">        crypto.SHA256,</span><br><span class="line">        hash[:],</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 转换为Base64编码</span></span><br><span class="line">    license.Signature = base64.StdEncoding.EncodeToString(signature)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="许可证验证">许可证验证</h2>
+<blockquote>
+<p>验证模块负责检查许可证的有效性和权限</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Validator 许可证验证器</span></span><br><span class="line"><span class="keyword">type</span> Validator <span class="keyword">struct</span> &#123;</span><br><span class="line">    publicKey *rsa.PublicKey</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// NewValidator 创建许可证验证器</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewValidator</span><span class="params">(publicKey *rsa.PublicKey)</span></span> *Validator &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;Validator&#123;publicKey: publicKey&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Validate 验证许可证</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(v *Validator)</span></span> Validate(license *License, hardwareID <span class="type">string</span>) <span class="type">error</span> &#123;</span><br><span class="line">    <span class="comment">// 1. 验证签名</span></span><br><span class="line">    err := v.verifySignature(license)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> fmt.Errorf(<span class="string">&quot;签名验证失败: %v&quot;</span>, err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 检查有效期</span></span><br><span class="line">    now := time.Now()</span><br><span class="line">    <span class="keyword">if</span> now.Before(license.IssueDate) &#123;</span><br><span class="line">        <span class="keyword">return</span> errors.New(<span class="string">&quot;许可证尚未生效&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> now.After(license.ExpireDate) &#123;</span><br><span class="line">        <span class="keyword">return</span> errors.New(<span class="string">&quot;许可证已过期&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3. 验证硬件绑定（如果有）</span></span><br><span class="line">    <span class="keyword">if</span> license.HardwareBinding != <span class="string">&quot;&quot;</span> &amp;&amp; license.HardwareBinding != hardwareID &#123;</span><br><span class="line">        <span class="keyword">return</span> errors.New(<span class="string">&quot;硬件绑定验证失败&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// verifySignature 验证许可证签名</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(v *Validator)</span></span> verifySignature(license *License) <span class="type">error</span> &#123;</span><br><span class="line">    <span class="comment">// 移除签名字段后序列化</span></span><br><span class="line">    licenseBytes, err := json.Marshal(<span class="keyword">struct</span> &#123;</span><br><span class="line">        ID              <span class="type">string</span>            <span class="string">`json:&quot;id&quot;`</span></span><br><span class="line">        CustomerID      <span class="type">string</span>            <span class="string">`json:&quot;customer_id&quot;`</span></span><br><span class="line">        IssueDate       time.Time         <span class="string">`json:&quot;issue_date&quot;`</span></span><br><span class="line">        ExpireDate      time.Time         <span class="string">`json:&quot;expire_date&quot;`</span></span><br><span class="line">        Features        <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>    <span class="string">`json:&quot;features&quot;`</span></span><br><span class="line">        RateLimits      <span class="keyword">map</span>[<span class="type">string</span>]<span class="type">int</span>    <span class="string">`json:&quot;rate_limits&quot;`</span></span><br><span class="line">        HardwareBinding <span class="type">string</span>            <span class="string">`json:&quot;hardware_binding&quot;`</span></span><br><span class="line">    &#125;&#123;</span><br><span class="line">        ID:              license.ID,</span><br><span class="line">        CustomerID:      license.CustomerID,</span><br><span class="line">        IssueDate:       license.IssueDate,</span><br><span class="line">        ExpireDate:      license.ExpireDate,</span><br><span class="line">        Features:        license.Features,</span><br><span class="line">        RateLimits:      license.RateLimits,</span><br><span class="line">        HardwareBinding: license.HardwareBinding,</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 计算哈希</span></span><br><span class="line">    hash := sha256.Sum256(licenseBytes)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 解码签名</span></span><br><span class="line">    signature, err := base64.StdEncoding.DecodeString(license.Signature)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 验证签名</span></span><br><span class="line">    <span class="keyword">return</span> rsa.VerifyPKCS1v15(</span><br><span class="line">        v.publicKey,</span><br><span class="line">        crypto.SHA256,</span><br><span class="line">        hash[:],</span><br><span class="line">        signature,</span><br><span class="line">    )</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// HasFeature 检查是否有特定功能权限</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(v *Validator)</span></span> HasFeature(license *License, feature <span class="type">string</span>, minLevel <span class="type">int</span>) <span class="type">bool</span> &#123;</span><br><span class="line">    level, exists := license.Features[feature]</span><br><span class="line">    <span class="keyword">return</span> exists &amp;&amp; level &gt;= minLevel</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="硬件指纹采集">硬件指纹采集</h2>
+<blockquote>
+<p>硬件指纹模块用于生成和验证设备唯一标识</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Hardware 硬件信息采集器</span></span><br><span class="line"><span class="keyword">type</span> Hardware <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// NewHardware 创建硬件信息采集器</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewHardware</span><span class="params">()</span></span> *Hardware &#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;Hardware&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// GetHardwareID 获取硬件唯一标识</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(h *Hardware)</span></span> GetHardwareID() (<span class="type">string</span>, <span class="type">error</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> parts []<span class="type">string</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 1. 获取CPU信息</span></span><br><span class="line">    cpuInfo, err := ioutil.ReadFile(<span class="string">&quot;/proc/cpuinfo&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</span><br><span class="line">        parts = <span class="built_in">append</span>(parts, <span class="type">string</span>(cpuInfo))</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 获取主板信息</span></span><br><span class="line">    boardInfo, err := ioutil.ReadFile(<span class="string">&quot;/sys/class/dmi/id/board_serial&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</span><br><span class="line">        parts = <span class="built_in">append</span>(parts, <span class="type">string</span>(boardInfo))</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3. 获取网络接口信息</span></span><br><span class="line">    ifaces, err := net.Interfaces()</span><br><span class="line">    <span class="keyword">if</span> err == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> _, iface := <span class="keyword">range</span> ifaces &#123;</span><br><span class="line">            <span class="keyword">if</span> iface.Flags&amp;net.FlagUp != <span class="number">0</span> &amp;&amp; iface.HardwareAddr.String() != <span class="string">&quot;&quot;</span> &#123;</span><br><span class="line">                parts = <span class="built_in">append</span>(parts, iface.HardwareAddr.String())</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(parts) == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;&quot;</span>, errors.New(<span class="string">&quot;无法获取硬件信息&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 计算哈希</span></span><br><span class="line">    hash := sha256.Sum256([]<span class="type">byte</span>(strings.Join(parts, <span class="string">&quot;|&quot;</span>)))</span><br><span class="line">    <span class="keyword">return</span> hex.EncodeToString(hash[:]), <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="许可证存储和加载">许可证存储和加载</h2>
+<blockquote>
+<p>安全地存储和加载许可证</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Storage 许可证存储接口</span></span><br><span class="line"><span class="keyword">type</span> Storage <span class="keyword">interface</span> &#123;</span><br><span class="line">    Save(license *License) <span class="type">error</span></span><br><span class="line">    Load() (*License, <span class="type">error</span>)</span><br><span class="line">    Delete() <span class="type">error</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// FileStorage 文件存储实现</span></span><br><span class="line"><span class="keyword">type</span> FileStorage <span class="keyword">struct</span> &#123;</span><br><span class="line">    path   <span class="type">string</span></span><br><span class="line">    cipher *aesCipher <span class="comment">// 加密器</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// NewFileStorage 创建文件存储</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewFileStorage</span><span class="params">(path <span class="type">string</span>, encryptionKey []<span class="type">byte</span>)</span></span> (*FileStorage, <span class="type">error</span>) &#123;</span><br><span class="line">    cipher, err := newAesCipher(encryptionKey)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> &amp;FileStorage&#123;</span><br><span class="line">        path:   path,</span><br><span class="line">        cipher: cipher,</span><br><span class="line">    &#125;, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Save 保存许可证到文件</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(fs *FileStorage)</span></span> Save(license *License) <span class="type">error</span> &#123;</span><br><span class="line">    licenseBytes, err := json.Marshal(license)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 加密许可证</span></span><br><span class="line">    encrypted, err := fs.cipher.Encrypt(licenseBytes)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 写入文件</span></span><br><span class="line">    <span class="keyword">return</span> ioutil.WriteFile(fs.path, encrypted, <span class="number">0600</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Load 从文件加载许可证</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(fs *FileStorage)</span></span> Load() (*License, <span class="type">error</span>) &#123;</span><br><span class="line">    <span class="comment">// 读取文件</span></span><br><span class="line">    encrypted, err := ioutil.ReadFile(fs.path)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 解密</span></span><br><span class="line">    licenseBytes, err := fs.cipher.Decrypt(encrypted)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 解析许可证</span></span><br><span class="line">    <span class="keyword">var</span> license License</span><br><span class="line">    err = json.Unmarshal(licenseBytes, &amp;license)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> &amp;license, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Delete 删除许可证文件</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(fs *FileStorage)</span></span> Delete() <span class="type">error</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> os.Remove(fs.path)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="许可证安全管理建议">许可证安全管理建议</h2>
+<h3 id="秘钥管理">秘钥管理</h3>
+<ul>
+<li>秘钥应在HSM中生成和存储</li>
+<li>公钥应该通过安全通道分发, 例如mtls</li>
+<li>定时轮换秘钥对</li>
+</ul>
+<h3 id="许可证存储">许可证存储</h3>
+<ul>
+<li>使用强加密存储许可证文件</li>
+<li>考虑分片存储等方案</li>
+<li>限制许可证文件访问权限</li>
+</ul>
+<h3 id="代码安全">代码安全</h3>
+<ul>
+<li>代码混淆 <a
+target="_blank" rel="noopener" href="https://github.com/burrowers/garble">burrowers/garble</a></li>
+<li>防篡改技术保护核心代码</li>
+<li>日志脱敏</li>
+</ul>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2025/07/24/%E5%9F%BA%E4%BA%8E%E8%AE%B8%E5%8F%AF%E8%AF%81%E7%9A%84%E5%8A%A8%E6%80%81REST%20API/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <!-- <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2025-07-31 03:28:30
+            </span> -->
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/golang/" title="golang">
+                        #golang
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8Egolang%E7%9A%84%E8%AE%B8%E5%8F%AF%E8%AF%81%E7%AE%A1%E7%90%86"><span class="toc-text">基于Golang的许可证管理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%B8%E5%8F%AF%E8%AF%81%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="toc-text">许可证数据结构设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%B8%E5%8F%AF%E8%AF%81%E7%94%9F%E6%88%90%E5%92%8C%E7%AD%BE%E5%90%8D"><span class="toc-text">许可证生成和签名</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%B8%E5%8F%AF%E8%AF%81%E9%AA%8C%E8%AF%81"><span class="toc-text">许可证验证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E6%8C%87%E7%BA%B9%E9%87%87%E9%9B%86"><span class="toc-text">硬件指纹采集</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%B8%E5%8F%AF%E8%AF%81%E5%AD%98%E5%82%A8%E5%92%8C%E5%8A%A0%E8%BD%BD"><span class="toc-text">许可证存储和加载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%B8%E5%8F%AF%E8%AF%81%E5%AE%89%E5%85%A8%E7%AE%A1%E7%90%86%E5%BB%BA%E8%AE%AE"><span class="toc-text">许可证安全管理建议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A7%98%E9%92%A5%E7%AE%A1%E7%90%86"><span class="toc-text">秘钥管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%B8%E5%8F%AF%E8%AF%81%E5%AD%98%E5%82%A8"><span class="toc-text">许可证存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%89%E5%85%A8"><span class="toc-text">代码安全</span></a></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+    </ul>
+  </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="搜索...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Go%E8%AF%AD%E8%A8%80%E8%AE%B8%E5%8F%AF%E8%AF%81%E7%AE%A1%E7%90%86%E6%A8%A1%E5%9D%97%E5%AE%9E%E8%B7%B5 + '&url=' + https%3A%2F%2Fericpuwang.github.io%2F2025%2F07%2F25%2FGo%2520%25E8%25AF%25AD%25E8%25A8%2580%25E8%25AE%25B8%25E5%258F%25AF%25E8%25AF%2581%25E7%25AE%25A1%25E7%2590%2586%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=https://ericpuwang.github.io/2025/07/25/Go%20%E8%AF%AD%E8%A8%80%E8%AE%B8%E5%8F%AF%E8%AF%81%E7%AE%A1%E7%90%86/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
