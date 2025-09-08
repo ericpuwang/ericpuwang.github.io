@@ -1,18 +1,12 @@
----
-title: K8s Iptables分析
-date: 2024-11-07
-tags:
-- k8s
-- iptables
----
+# K8s Iptables分析
 
-# Iptables
+## Iptables
 
 > **iptables** 通常就是指linux上的防火墙,主要分为netfilter和iptables两个组件。netfilter为内核空间的组件，iptables为用户空间的组件，提供添加，删除查询防火墙规则的功能。
 
 **k8s的service通过iptables来做后端pod的转发和路由**
 
-## 环境准备
+### 环境准备
 
 ```shell
 # 创建集群
@@ -160,12 +154,12 @@ COMMIT
 # Completed on Wed Sep 28 06:24:53 2022
 ```
 
-## service
+### service
 
 有如下的映射关系
 
 | clusterIp:port   | podIp:port      |
-| ---------------- | --------------- |
+| :--- | :--- |
 | 10.96.237.231:80 | 10.244.0.5:8000 |
 
 ```shell
@@ -198,9 +192,9 @@ NAME      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE     SEL
 traefik   ClusterIP   10.96.237.231   <none>        80/TCP,443/TCP   3m25s   app.kubernetes.io/instance=traefik,app.kubernetes.io/name=traefik
 ```
 
-## iptables
+### iptables
 
-### 入网流量
+#### 入网流量
 
 ***1. nat表***
 
@@ -278,7 +272,7 @@ Chain KUBE-FIREWALL (2 references)
 
 
 
-### 出网流量
+#### 出网流量
 
 ***1. nat表***
 

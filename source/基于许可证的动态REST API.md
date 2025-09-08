@@ -1,10 +1,3 @@
----
-title: 基于许可证的动态REST API
-date: 2025-07-25
-tags:
-- golang
----
-
 # 基于许可证的动态REST API
 
 ## 一、概述

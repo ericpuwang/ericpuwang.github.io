@@ -1,11 +1,4 @@
----
-title: iptabes nat
-date: 2024-08-06
-tags:
-- linux
-- iptables
-categories: iptables
----
+# Iptabes NAT
 
 **<font color='red'>如果想要NAT功能能够正常使用，需要开启Linux主机的核心转发功能。</font>**
 

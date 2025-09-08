@@ -1,11 +1,4 @@
----
-title: CentOS-LDAP统一认证登陆
-date: 2019-07-21
-tags:
-- linux
-- ldap
-categories: linux
----
+# CentOS-LDAP统一认证登陆
 
 > 安装nss-pam-ldapd
 

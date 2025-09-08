@@ -1,19 +1,13 @@
----
-title: K8s IPVS工作原理
-date: 2024-11-07
-tags:
-- k8s
-- ipvs
----
+# K8s IPVS工作原理
 
-# IPVS
+## IPVS
 
 > IPVS 专门用于负载均衡，并使用更高效的数据结构（哈希表），允许几乎无限的规模扩张。
 
 **Ipvs和Iptables区别**
 
-| Netfilter Hook       | 作用                                                         | Iptables | Ipvs                           |
-| -------------------- | ------------------------------------------------------------ | -------- | ------------------------------ |
+| Netfilter Hook | 作用 | Iptables | Ipvs |
+| :--- | :--- | :--- | :--- |
 | `NF_IP_PRE_ROUTING`  | 接收的数据包进入协议栈后立即触发此回调函数。**发生在路由判断之前** | ✓        | **`✕`** |
 | `NF_IP_LOCAL_IN`     | 接收的数据包经过路由判断后，如果目标地址在本机上，则将触发此回调函数 | ✓        | ✓                              |
 | `NF_IP_FORWARD`      | 接收的数据包经过路由判断后，如果目标地址在其他机器上，则将触发此回调函数 | ✓        | ✓                              |
@@ -69,8 +63,8 @@ kube-proxy `ipvs`模式在如下情况中依赖`iptables`实现:
 - kube-proxy启动时指定集群CIDR
 - 支持`Loadbalancer`和`NodePort`类型的Service
 
-| 名称                           | 条目                                                         | 使用场景                                                     |
-| ------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 名称 | 条目 | 使用场景 |
+| :--- | :--- | :--- |
 | KUBE-CLUSTER-IP                | All service IP + port                                        | Mark-Masq for cases that <font color="red">`masquerade-all=true`</font> or <font color="red">`clusterCIDR`</font> specified |
 | KUBE-LOOP-BACK                 | All service IP + port + IP                                   | masquerade for solving hairpin purpose                       |
 | KUBE-EXTERNAL-IP               | service external IP + port                                   | masquerade for packages to external IPs                      |
@@ -83,7 +77,7 @@ kube-proxy `ipvs`模式在如下情况中依赖`iptables`实现:
 | KUBE-NODE-PORT-UDP             | nodeport type service UDP port                               | masquerade for packets to nodePort(UDP)                      |
 | KUBE-NODE-PORT-LOCAL-UDP       | nodeport type service UDP port with <font color="red">`externalTrafficPolicy=local`</font> | accept packages to nodeport service with <font color="red">`externalTrafficPolicy=local`</font> |
 
-# 入网流量
+## 入网流量
 
 1. **nat表**
 
@@ -225,7 +219,7 @@ kube-proxy `ipvs`模式在如下情况中依赖`iptables`实现:
 
 ![ipvs工作原理图.png](/images/ipvs工作原理图.png)
 
-# FAQ
+## FAQ
 
 `Q:` 为什么每个svc会在ipvs网卡增加vip地址
 

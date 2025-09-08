@@ -1,19 +1,12 @@
----
-title: 使用KIND创建K8S集群
-date: 2024-10-30
-tags:
-- k8s
-- kind
-categories: k8s
----
+# 使用KIND创建K8S集群
 
-# 安装kind
+## 安装kind
 
 ```shell
 go install sigs.k8s.io/kind@v0.24.0
 ```
 
-# 编译容器网络插件
+## 编译容器网络插件
 
 ```shell
 mkdir -p /opt/kind
@@ -23,9 +16,9 @@ cd /opt/kind/plugins
 bash build_linux.sh
 ```
 
-# 创建集群
+## 创建集群
 
-## 集群配置
+### 集群配置
 > 禁用kind提高的默认cni `kindnet`
 
 ```yaml
@@ -77,12 +70,12 @@ nodes:
     containerPath: /opt/cni/bin
 ```
 
-## 创建集群
+### 创建集群
 ```shell
 kind create cluster --config /opt/kind/config.yaml
 ```
 
-# K8S CNI
+## K8S CNI
 > 本文使用kube-flannel cni
 
 ```shell
@@ -144,7 +137,7 @@ data:
 EOF
 ```
 
-# 镜像加速
+## 镜像加速
 
 ```bash
 #!/bin/sh

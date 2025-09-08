@@ -1,11 +1,6 @@
----
-title: 使用kubernetes证书保护工作负载
-date: 2025-01-16
-tags:
-- k8s
----
+# 使用kubernetes证书保护工作负载
 
-# 介绍
+## 介绍
 由于稳定版的CertificateSigningRequest API(`certificates.k8s.io/v1`)不允许将`.spec.signerName`设置为`kubernetes.io/legacy-unknown`, 为了使用kubernetes证书保护工作负载, 参考kube-controller-manager中的`certificate controller`实现一个[自定义证书签署者](https://github.com/ericpuwang/certificate-controller.git)。
 
 `cms.io/app-serving`: 该服务证书被API服务器视为有效的服务端证书, 但没有其他保证。`certificate-controller`不会自动批准该证书
@@ -17,7 +12,7 @@ tags:
 - 过期时间/证书有效期: 1年（默认值和最大值）
 - 允许/不允许CA位: 不允许
 
-# 签发证书
+## 签发证书
 > singerName `cms.io/app-serving`
 
 1. 创建私有

@@ -1,43 +1,36 @@
----
-title: 安装LDAP
-date: 2019-07-21
-tags:
-- linux
-- ldap
-categories: linux
----
+# 安装LDAP
 
-# 前提条件
+## 前提条件
 
 - 关闭防火墙
 - 关闭selinux
 
 
-# 安装ldap
+## 安装ldap
 
 ```shell
 yum install openldap openldap-clients openldap-servers
 ```
 
-# 设置管理员密码
+## 设置管理员密码
 
 ```shell
 slappasswd
 ```
 
-# 设置ldap数据库
+## 设置ldap数据库
 ```shell
 cp /usr/share/openldap-servers/DB_CONFIG.example /var/lib/ldap/DB_CONFIG
 chown ldap:ldap /var/lib/ldap/*
 ```
 
-# 启动ldap服务，并设置为开机启动
+## 启动ldap服务，并设置为开机启动
 ```shell
 systemctl start slapd
 systemctl enable slapd
 ```
 
-# 配置ldap server
+## 配置ldap server
 
 **切换到ldap目录**
 `cd /etc/openldap/slapd.d/cn=config`
@@ -88,20 +81,20 @@ olcAccess: {0}to * by dn.base="gidNumber=0+uidNumber=0,cn=peercred,cn=extern al,
 EOF
 ```
 
-# 配置信息测试
+## 配置信息测试
 ```shell
 slaptest -u
 ```
 * 输出内容 config file testing succeeded
 
-# 添加ldap schema
+## 添加ldap schema
 ```shell
 ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/cosine.ldif
 ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/nis.ldif
 ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/inetorgperson.ldif
 ```
 
-# 创建ldap目录
+## 创建ldap目录
 > 文件名`base.ldif`,文件路径`/root/ldap`
 
 ```shell
@@ -122,7 +115,7 @@ ou: Account
 
 * 执行命令`ldapadd -x -W -D "cn=Admin,dc=periky,dc=com" -f /root/ldap/base.ldif`
 
-# 添加用户
+## 添加用户
 > 文件名`test.ldif`,文件路径`/root/ldap`
 
 ```shell

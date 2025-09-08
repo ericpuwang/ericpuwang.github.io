@@ -1,18 +1,11 @@
----
-title: Go Redis使用可重入锁支持选主
-date: 2024-11-07
-tags:
-- golang
-- redis
-- leaderelection
----
+# Go Redis使用可重入锁支持选主
 
-# 分析
-对于资源共享需求较低的场景，可以使用有时效性的**互斥锁**，可以实现选主功能。可以参考[<font style="color: red">K8S选主机制</font>](/2024/11/06/k8s/高可用模式下的选主机制/)
+## 分析
+对于资源共享需求较低的场景，可以使用有时效性的**互斥锁**，可以实现选主功能。可以参考[<font style="color: red">K8S选主机制</font>](高可用模式下的选主机制.md)
 
-# 方案
+## 方案
 
-## 定义选主对象
+### 定义选主对象
 > 选主锁使用带有时效的Redis互斥锁, 只有得到该互斥锁，才能执行程序
 
 ```go
@@ -23,7 +16,7 @@ type LeaderElector struct {
 }
 ```
 
-## 执行选主逻辑，并启动服务
+### 执行选主逻辑，并启动服务
 
 ```go
 func (le *LeaderElector) Run(ctx context.Context) {
@@ -46,7 +39,7 @@ func (le *LeaderElector) Run(ctx context.Context) {
 }
 ```
 
-# 示例
+## 示例
 
 ```go
 package main
