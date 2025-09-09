@@ -1,6 +1,6 @@
 # Iptabes NAT
 
-**<font color='red'>如果想要NAT功能能够正常使用，需要开启Linux主机的核心转发功能。</font>**
+**<span color='red'>如果想要NAT功能能够正常使用，需要开启Linux主机的核心转发功能。</span>**
 
 ## SNAT
 
@@ -21,7 +21,7 @@ iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -o eth0 -j MASQUERADE
 
 ***配置DNAT，可以通过公网IP访问局域网内的服务。***
 
-**<font color='red'>Tips:</font>** 理论上来说，只要配置DNAT规则，不需要对应的SNAT规则即可达到DNAT效果。但是测试过程中，对应SNAT规则也需要配置，才能正常DNAT，可以先尝试只配置DNAT规则，如果无法正常DNAT，再尝试添加对应的SNAT规则，SNAT规则配置一条即可，DNAT规则需要根据实际情况配置不同的DNAT规则。
+**<span color='red'>Tips:</span>** 理论上来说，只要配置DNAT规则，不需要对应的SNAT规则即可达到DNAT效果。但是测试过程中，对应SNAT规则也需要配置，才能正常DNAT，可以先尝试只配置DNAT规则，如果无法正常DNAT，再尝试添加对应的SNAT规则，SNAT规则配置一条即可，DNAT规则需要根据实际情况配置不同的DNAT规则。
 
 ```shell
 iptables -t nat -I PREROUTING -d 公网IP -p tcp --dport 公网端口 -j DNAT --to-destination 私网IP:端口号

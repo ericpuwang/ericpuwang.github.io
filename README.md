@@ -36,6 +36,6 @@
 - [内存控制](source/nodejs的内存控制.md)
 
 #
-- [Golang Redis使用可重入锁支持选主](source/Go%20Redis使用可重入锁支持选主.md)
-- [Golang 许可证管理](source/Go%20语言许可证管理.md)
-- [基于许可证的动态Rest Api](source/基于许可证的动态REST%20API.md)
+- [Golang Redis使用可重入锁支持选主](source/基于Redis的可重入锁支持选主.md)
+- [Golang 许可证管理](source/许可证管理.md)
+- [基于许可证的动态Rest Api](source/基于许可证的动态RESTAPI.md)

@@ -278,7 +278,7 @@ Chain KUBE-FIREWALL (2 references)
 
 `OUTPUT` -> `KUBE-SERVICES`
 
-> **<font color="red">ps</font>**: 出网流量不会命中`KUBE-SERVICES`链中的规则
+> **<span color="red">ps</span>**: 出网流量不会命中`KUBE-SERVICES`链中的规则
 
 ```shell
 # OUTPUT

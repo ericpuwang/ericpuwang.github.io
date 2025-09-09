@@ -65,23 +65,23 @@ kube-proxy `ipvs`模式在如下情况中依赖`iptables`实现:
 
 | 名称 | 条目 | 使用场景 |
 | :--- | :--- | :--- |
-| KUBE-CLUSTER-IP                | All service IP + port                                        | Mark-Masq for cases that <font color="red">`masquerade-all=true`</font> or <font color="red">`clusterCIDR`</font> specified |
+| KUBE-CLUSTER-IP                | All service IP + port                                        | Mark-Masq for cases that <span color="red">masquerade-all=true</span> or <span color="red">clusterCIDR</span> specified |
 | KUBE-LOOP-BACK                 | All service IP + port + IP                                   | masquerade for solving hairpin purpose                       |
 | KUBE-EXTERNAL-IP               | service external IP + port                                   | masquerade for packages to external IPs                      |
 | KUBE-LOAD-BALANCER             | load balancer ingress IP + port                              | masquerade for packages to load balancer type service        |
-| KUBE-LOAD-BALANCER-LOCAL       | LB ingress IP + port with <font color="red">`externalTrafficPolicy=local`</font> | accept packages to load balancer with <font color="red">`externalTrafficPolicy=local`</font> |
-| KUBE-LOAD-BALANCER-FW          | load balancer ingress IP + port with <font color="red">`loadBalancerSourceRanges`</font> | package filter for load balancer with <font color="red">`loadBalancerSourceRanges`</font> specified |
-| KUBE-LOAD-BALANCER-SOURCE-CIDR | load balancer ingress IP + port + source CIDR                | package filter for load balancer with <font color="red">`loadBalancerSourceRanges`</font> specified |
+| KUBE-LOAD-BALANCER-LOCAL       | LB ingress IP + port with <span color="red">externalTrafficPolicy=local</span> | accept packages to load balancer with <span color="red">externalTrafficPolicy=local</span> |
+| KUBE-LOAD-BALANCER-FW          | load balancer ingress IP + port with <span color="red">loadBalancerSourceRanges</span> | package filter for load balancer with <span color="red">loadBalancerSourceRanges</span> specified |
+| KUBE-LOAD-BALANCER-SOURCE-CIDR | load balancer ingress IP + port + source CIDR                | package filter for load balancer with <span color="red">loadBalancerSourceRanges</span> specified |
 | KUBE-NODE-PORT-TCP             | nodeport type service TCP port                               | masquerade for packets to nodePort(TCP)                      |
-| KUBE-NODE-PORT-LOCAL-TCP       | nodeport type service TCP port with <font color="red">`externalTrafficPolicy=local`</font> | accept packages to nodeport service with <font color="red">`externalTrafficPolicy=local`</font> |
+| KUBE-NODE-PORT-LOCAL-TCP       | nodeport type service TCP port with <span color="red">externalTrafficPolicy=local</span> | accept packages to nodeport service with <span color="red">externalTrafficPolicy=local</span> |
 | KUBE-NODE-PORT-UDP             | nodeport type service UDP port                               | masquerade for packets to nodePort(UDP)                      |
-| KUBE-NODE-PORT-LOCAL-UDP       | nodeport type service UDP port with <font color="red">`externalTrafficPolicy=local`</font> | accept packages to nodeport service with <font color="red">`externalTrafficPolicy=local`</font> |
+| KUBE-NODE-PORT-LOCAL-UDP       | nodeport type service UDP port with <span color="red">externalTrafficPolicy=local</span> | accept packages to nodeport service with <span color="red">externalTrafficPolicy=local</span> |
 
 ## 入网流量
 
 1. **nat表**
 
-   `PREROUTING` -> `KUBE-SERVICES` -> `KUBE-MARK-MASQ` -> `ACCEPT` 
+   `PREROUTING` -> `KUBE-SERVICES` -> `KUBE-MARK-MASQ` -> `ACCEPT`
 
    ```shell
    Chain PREROUTING (policy ACCEPT 0 packets, 0 bytes)
@@ -140,9 +140,9 @@ kube-proxy `ipvs`模式在如下情况中依赖`iptables`实现:
 
    ```shell
    root@ipvs-control-plane:/# ipset list
-   
+
    ...
-   
+
    Name: KUBE-LOOP-BACK
    Type: hash:ip,port,ip
    Revision: 5
@@ -157,7 +157,7 @@ kube-proxy `ipvs`模式在如下情况中依赖`iptables`实现:
    10.244.0.4,udp:53,10.244.0.4
    10.244.0.4,tcp:53,10.244.0.4
    10.244.0.2,tcp:53,10.244.0.2
-   
+
    Name: KUBE-LOAD-BALANCER
    Type: hash:ip,port
    Revision: 5
@@ -166,7 +166,7 @@ kube-proxy `ipvs`模式在如下情况中依赖`iptables`实现:
    References: 0
    Number of entries: 0
    Members:
-   
+
    Name: KUBE-NODE-PORT-LOCAL-SCTP-HASH
    Type: hash:ip,port
    Revision: 5
@@ -175,7 +175,7 @@ kube-proxy `ipvs`模式在如下情况中依赖`iptables`实现:
    References: 0
    Number of entries: 0
    Members:
-   
+
    Name: KUBE-CLUSTER-IP
    Type: hash:ip,port
    Revision: 5
@@ -188,7 +188,7 @@ kube-proxy `ipvs`模式在如下情况中依赖`iptables`实现:
    10.96.0.10,tcp:53
    10.96.0.10,udp:53
    10.96.0.10,tcp:9153
-   
+
    ...
    ```
 

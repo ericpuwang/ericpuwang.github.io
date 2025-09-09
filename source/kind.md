@@ -82,7 +82,7 @@ kind create cluster --config /opt/kind/config.yaml
 kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 ```
 
-<font style="color: red">**PS:**</font> kind创建的集群中podCIDR为`10.244.0.0/16`。如果修改了kind集群的默认podCIDR，则需要下载上述清单并修改网络以匹配集群中的pod网络。
+**<span style="color: red">PS:</span>** kind创建的集群中podCIDR为`10.244.0.0/16`。如果修改了kind集群的默认podCIDR，则需要下载上述清单并修改网络以匹配集群中的pod网络。
 
 # Docker Registry
 > 参考文档: https://kind.sigs.k8s.io/docs/user/local-registry/
@@ -94,7 +94,7 @@ set -o errexit
 # 1. Create registry container unless it already exists
 reg_name='kind-registry'
 reg_port='5001'
-if [ "$(docker inspect -f '{{.State.Running}}' "${reg_name}" 2>/dev/null || true)" != 'true' ]; then
+if [ "$(docker inspect -f '{% raw %}{{.State.Running}}{% endraw %}' "${reg_name}" 2>/dev/null || true)" != 'true' ]; then
   docker run \
     -d --restart=always -p "127.0.0.1:${reg_port}:5000" --network bridge --name "${reg_name}" \
     registry:2

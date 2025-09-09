@@ -113,7 +113,7 @@ V8的垃圾回收策略主要是基于`分代式垃圾回收机制`，其根据�
 
 ![](/images/Mark-Compact垃圾回收示意图.jpg)
 
-<font style="color:red">**垃圾回收算法的简单对比**</font>
+**<span style="color:red">垃圾回收算法的简单对比</span>**
 
 | 回收算法 | Mark-Sweep | Mark-Compact | Scavenge |
 | :--- | :--- | :--- | :--- |
