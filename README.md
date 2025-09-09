@@ -19,6 +19,7 @@
 - [kind](source/kind.md)
 - [使用kubernetes证书保护工作负载](source/使用kubernetes证书保护工作负载.md)
 - [高可用模式下的选主机制](source/高可用模式下的选主机制.md)
+- [多集群管理](source/k8s集群管理引擎.md)
 
 # Linux
 - [CentOS LDAP统一认证登录](source/CentOS-LDAP统一认证登陆.md)
