@@ -87,7 +87,7 @@ export PATH
 #### 初始化数据库
 
 - 进入安装目录
-    `cd /usr/local/mysql/scripts`
+`cd /usr/local/mysql/scripts`
 - 数据库初始化
 ```shell
 ./mysql_install_db \
@@ -108,7 +108,7 @@ chkconfig --add mysqld
 - 用户初始化
 ```shell
 /etc/init.d/mysqld start
-    
+
 mysql_secure_installation # 设置数据库root用户和密码
 ```
 ## 安装php
@@ -159,9 +159,9 @@ cd php-5.6.32/ext
 2. 选择并编译扩展[eg:`curl`]
 ```shell
 cd curl
-    
+
 phpize ./configure --with-php-config=/usr/local/php/bin/php-config
-    
+
 make && make install
 ```
 
