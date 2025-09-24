@@ -29,6 +29,8 @@
 - [LDAP](blog/linux/LDAP.md)
 - [LAMP](blog/linux/LNMP.md)
 - [网络虚拟化](blog/linux/网络虚拟化.md)
+- [IPIP隧道介绍](blog/linux/IPIP隧道介绍.md)
+- [理解VXLAN技术](blog/linux/理解VXLAN技术.md)
 
 ## Iptables
 - [基础知识](blog/linux/iptables/基础知识.md)
@@ -38,7 +40,7 @@
 - [NAT](blog/linux/iptables/nat.md)
 
 # ---
-- [内存控制](blog/nodejs的内存控制.md)
+- [Node.js的内存控制](blog/nodejs的内存控制.md)
 - [Golang Redis使用可重入锁支持选主](blog/基于Redis的可重入锁支持选主.md)
 - [Golang 许可证管理](blog/许可证管理.md)
 - [基于许可证的动态Rest Api](blog/基于许可证的动态RESTAPI.md)
