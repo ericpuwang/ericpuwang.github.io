@@ -2,7 +2,7 @@
 > Linux L3隧道底层原理都是基于tun设备
 
 ## ipip
-> Ipv4 in Ipv3,在Ipv4报文的基础上封装一个Ipv4报文
+> Ipv4 in Ipv4,在Ipv4报文的基础上封装一个Ipv4报文
 
 要使用`ipip`隧道,首先需要内核模块`ipip.ko`的支持
 ```shell
@@ -58,14 +58,10 @@ ip addr add 10.10.10.1/24 dev br0
 ip addr add 10.10.20.1/24 dev br0
 ```
 
-**修改内核参数**
-> ubuntu发行版需要配置该参数
+**添加默认路由**
 ```shell
-echo 1 > /proc/sys/net/ipv4/conf/v1_p/accept_local
-echo 1 > /proc/sys/net/ipv4/conf/v2_p/accept_local
-echo 0 > /proc/sys/net/ipv4/conf/all/rp_filter
-echo 0 > /proc/sys/net/ipv4/conf/v1_p/rp_filter
-echo 0 > /proc/sys/net/ipv4/conf/v2_p/rp_filter
+ip netns exec ns1 ip route add default dev v1
+ip netns exec ns2 ip route add default dev v2
 ```
 
 ```shell
