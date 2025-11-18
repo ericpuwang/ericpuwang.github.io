@@ -217,7 +217,7 @@ kube-proxy `ipvs`模式在如下情况中依赖`iptables`实现:
 **`IPVS模式工作原理示意图:`**
 
 
-![ipvs工作原理图.png](/images/ipvs工作原理图.png)
+![ipvs工作原理图.png](../images/ipvs工作原理图.png)
 
 ## FAQ
 

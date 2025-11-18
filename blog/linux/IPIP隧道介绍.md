@@ -12,7 +12,7 @@ modprobe ipip
 lsmod | grep ipip
 ```
 
-![ipip隧道网络拓扑](/images/ipip隧道网络拓扑.png)
+![ipip隧道网络拓扑](../images/ipip隧道网络拓扑.png)
 
 **创建Network namespace**
 ```shell
@@ -86,7 +86,7 @@ ip netns exec ns1 ip link set tun1 up
 ip netns exec ns1 ip addr add 10.10.100.10 peer 10.10.200.10 dev tun1
 ```
 
-![ip报文封装示意图](/images/ip报文封装示意图.png)
+![ip报文封装示意图](../images/ip报文封装示意图.png)
 
 **在ns2创建tun2和ipip tunnel**
 ```shell

@@ -15,13 +15,13 @@ VXLAN创建在原来的IP网络(三层)上,只要是三层可达(能通过IP互�
 - `VNI`(Virtual Networ Identifier): VNI是每个VXLAN网络的标识,是个24位整数
 - `tunnel`: 虚拟通道,VXLAN通信双方都认为自己在直连通信,并不知道底层网络的存在
 
-![VXLAN的封包格式](/images/VXLAN的封包格式.png)
+![VXLAN的封包格式](../images/VXLAN的封包格式.png)
 VXLAN的报文就是MAC in UDP,即在三层网络的基础上构建一个虚拟的二层网络
 
 VXLAN报文的转发过程就是: 原始报文经过VTEP,被Linux内核添加上VXLAN包头及外层的UDP头部,再发送出去,对端VTEP接收到VXLAN报文后拆除外层UDP头部,并根据VXLAN头部的VNI把原始报文发送到目的服务器.
 
 ## 点对点的VXLAN
-![点对点的VXLAN](/images/点对点的VXLAN.png)
+![点对点的VXLAN](../images/点对点的VXLAN.png)
 
 **创建VXLAN接口**
 ```shell
@@ -86,7 +86,7 @@ PING 172.17.1.3 (172.17.1.3) 56(84) bytes of data.
 
 > 多播地址让源设备能够将分组发送给一组设备. 属于多播组的设备将被分配一个多播组IP地址，多播地址范围为224.0.0.0～239.255.255.255
 
-![多播模式下的VXLAN网络拓扑](/images/多播模式下的VXLAN网络拓扑.png)
+![多播模式下的VXLAN网络拓扑](../images/多播模式下的VXLAN网络拓扑.png)
 
 **播模式下VXLAN通信的全过程**
 1. host1的vxlan0发送ping报文到host2的`172.17.1.3`,内核发现源地址和目的地址在同一个局域网内. 需要知道对方的MAC地址,由于本地没有缓存,因此发送ARP请求
@@ -131,7 +131,7 @@ root@lima-k8s-network:~# bridge fdb
 
 ## VXLAN+桥接网络
 
-![VXLAN+网桥的网络拓扑](/images/VXLAN+网桥的网络拓扑.png)
+![VXLAN+网桥的网络拓扑](../images/VXLAN+网桥的网络拓扑.png)
 
 **创建VXLAN网卡,使用多播模式**
 ```shell

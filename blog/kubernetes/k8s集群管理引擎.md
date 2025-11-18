@@ -25,7 +25,7 @@
 
 ## 架构图
 
-![架构图](/images/多集群架构.jpg)
+![架构图](../images/多集群架构.jpg)
 
 `kme-apiserver` 是一个 **Aggregated apiserver** 服务
 - 提供managedclusters APIs, 基于[remotedialer](https://github.com/rancher/remotedialer)实现websockets服务器，来维护子集群的websocket连接
