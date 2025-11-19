@@ -1,5 +1,5 @@
-# Sample workflow for building and deploying a Jekyll site to GitHub Pages
-name: Deploy Jekyll with GitHub Pages dependencies preinstalled
+# Sample workflow for building and deploying a MkDocs site to GitHub Pages
+name: Deploy MkDocs to GitHub Pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -28,15 +28,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
+      - name: Install Python
+        uses: actions/setup-python@v5
         with:
-          source: ./
-          destination: ./_site
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install --no-deps -r requirements.txt
+      - name: Build site
+        run: mkdocs build --strict
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
 
   # Deployment job
   deploy:
