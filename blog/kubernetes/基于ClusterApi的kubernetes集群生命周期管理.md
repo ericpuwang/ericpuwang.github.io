@@ -15,7 +15,9 @@
 ## 工作流程
 
 ### 核心概念和控制器分工
+
 CAPI采用“分层设计”，将集群管理拆分为多个独立资源和对应的控制器，各司其职又协同工作。核心资源及控制器包括：
+
 | 资源类型 | 控制器代码 | 核心功能 |
 | :--- | :--- | :--- |
 |  `Cluster` | [cluster_controll](https://github.com/kubernetes-sigs/cluster-api/blob/v1.11.2/internal/controllers/cluster/cluster_controller.go) | 管理集群生命周期,协调基础设施和控制平面的依赖关系 |

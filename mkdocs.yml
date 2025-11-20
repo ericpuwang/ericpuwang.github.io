@@ -1,87 +1,17 @@
 site_name: 博客
 theme:
-  name: readthedocs
   custom_dir: overrides/html
+  name: readthedocs
 docs_dir: blog
 extra_css:
-  - https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.css
+- https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.css
 extra_javascript:
-  - https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.js
-  - https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/contrib/auto-render.min.js
+- https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.js
+- https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/contrib/auto-render.min.js
+plugins:
+- mermaid2:
+    theme: default
+- awesome-pages
+- search
 markdown_extensions:
-  - pymdownx.arithmatex:  # 处理 KaTeX 公式的扩展
-      generic: true  # 使用通用标记（$$...$$ 和 $...$）
-nav:
-  - Home:
-    - Node.js的内存控制: nodejs的内存控制.md
-    - Golang Redis使用可重入锁支持选主: 基于Redis的可重入锁支持选主.md
-    - Golang 许可证管理: 许可证管理.md
-    - 基于许可证的动态Rest Api: 基于许可证的动态RESTAPI.md
-    - 数据结构:
-      - 线性表: 数据结构/线性表.md
-      - 字符串、数组和广义表: 数据结构/字符串、数组和广义表.md
-      - 队列和栈: 数据结构/队列和栈.md
-      - 树和二叉树: 数据结构/树和二叉树.md
-      - 二叉查找树和平衡树: 数据结构/二叉查找树和平衡树.md
-      - 图: 数据结构/图.md
-    - 算法:
-      - B树: 算法/B树.md
-      - 排序: 算法/排序.md
-      - 散列表: 算法/散列表.md
-      - 查找: 算法/查找.md
-      - 递归算法的复杂度分析: 算法/递归算法的复杂度分析.md
-      - 神经网络: 算法/神经网络.md
-      - LeetCode:
-        - 三数之和: 算法/leetcode/三数之和.md
-        - 找出字符串中第一个匹配项的下标: 算法/leetcode/找出字符串中第一个匹配项的下标.md
-        - 删除链表的倒数第N个节点: 算法/leetcode/删除链表的倒数第N个节点.md
-        - 最长公共前缀: 算法/leetcode/最长公共前缀.md
-        - 括号生成: 算法/leetcode/括号生成.md
-        - 回文数: 算法/leetcode/回文数.md
-        - 合并两个有序链表: 算法/leetcode/合并两个有序链表.md
-        - k个一组翻转链表: 算法/leetcode/k个一组翻转链表.md
-        - 两两交换链表中的节点: 算法/leetcode/两两交换链表中的节点.md
-        - 整数转罗马数字: 算法/leetcode/整数转罗马数字.md
-        - Z字型变换: 算法/leetcode/Z字型变换.md
-        - 合并K个升序链表: 算法/leetcode/合并K个升序链表.md
-        - 整数反转: 算法/leetcode/整数反转.md
-        - 正则表达式匹配: 算法/leetcode/正则表达式匹配.md
-        - 罗马数字转整数: 算法/leetcode/罗马数字转整数.md
-        - 串联所有单词的子串: 算法/leetcode/串联所有单词的子串.md
-        - 最接近的三数之和: 算法/leetcode/最接近的三数之和.md
-        - 四数之和: 算法/leetcode/四数之和.md
-        - 电话号码的字母组合: 算法/leetcode/电话号码的字母组合.md
-        - 两数之和: 算法/leetcode/两数之和.md
-        - 寻找两个正序数组的中位数: 算法/leetcode/寻找两个正序数组的中位数.md
-        - 删除有序数组中的重复项: 算法/leetcode/删除有序数组中的重复项.md
-        - 无重复字符的最长子串: 算法/leetcode/无重复字符的最长子串.md
-        - 两数相加: 算法/leetcode/两数相加.md
-        - 最长回文串: 算法/leetcode/最长回文串.md
-        - 盛最多水的容器: 算法/leetcode/盛最多水的容器.md
-        - 移除元素: 算法/leetcode/移除元素.md
-        - 有效的括号: 算法/leetcode/有效的括号.md
-        - 下一个排列: 算法/leetcode/下一个排列.md
-        - 两数相除: 算法/leetcode/两数相除.md
-        - 字符串转换整数: 算法/leetcode/字符串转换整数.md
-    - Kubernetes:
-      - iptables: kubernetes/iptables.md
-      - ipvs: kubernetes/ipvs.md
-      - kind: kubernetes/kind.md
-      - 使用kubernetes证书保护工作负载: kubernetes/使用kubernetes证书保护工作负载.md
-      - 高可用模式下的选主机制: kubernetes/高可用模式下的选主机制.md
-      - 多集群管理: kubernetes/k8s集群管理引擎.md
-      - Pod的生命周期: kubernetes/Pod的生命周期.md
-      - 基于ClusterApi的kubernetes集群生命周期管理: kubernetes/基于ClusterApi的kubernetes集群生命周期管理.md
-    - Linux:
-      - CentOS LDAP统一认证登录: linux/CentOS-LDAP统一认证登陆.md
-      - LDAP: linux/LDAP.md
-      - LAMP: linux/LNMP.md
-      - 网络虚拟化: linux/网络虚拟化.md
-      - IPIP隧道介绍: linux/IPIP隧道介绍.md
-      - 理解VXLAN技术: linux/理解VXLAN技术.md
-      - Iptables:
-        - 基础知识: linux/iptables/基础知识.md
-        - 规则管理: linux/iptables/规则管理.md
-        - 规则匹配条件: linux/iptables/规则匹配条件.md
-        - 自定义链: linux/iptables/自定义链.md
-        - NAT: linux/iptables/nat.md
+- fenced_code

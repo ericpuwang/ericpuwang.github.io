@@ -3,6 +3,7 @@
 - [nodejs的内存控制.md](blog/nodejs的内存控制.md)
 - [基于Redis的可重入锁支持选主.md](blog/基于Redis的可重入锁支持选主.md)
 - [基于许可证的动态RESTAPI.md](blog/基于许可证的动态RESTAPI.md)
+- [代办.md](blog/代办.md)
 
 #  数据结构
 - [队列和栈.md](blog/数据结构/队列和栈.md)
