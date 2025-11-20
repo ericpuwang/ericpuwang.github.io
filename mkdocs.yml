@@ -11,7 +11,7 @@ extra_javascript:
 plugins:
 - mermaid2:
     theme: default
-- awesome-pages
+- awesome-nav
 - search
 markdown_extensions:
 - fenced_code
