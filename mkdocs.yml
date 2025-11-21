@@ -9,8 +9,7 @@ extra_javascript:
 - https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.js
 - https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/contrib/auto-render.min.js
 plugins:
-- mermaid2:
-    theme: default
+- mermaid2
 - awesome-nav
 - search
 markdown_extensions:
